@@ -10,6 +10,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Client implements Runnable {
     //Stores all the clients that have been created.
@@ -29,106 +30,51 @@ public class Client implements Runnable {
         br = new BufferedReader(new InputStreamReader(System.in));
 
 
-        try {
-            String userResponse = null;
-            while( username == null) {
-                System.out.println("Enter a username.");
-                for( Client c : Server.clientList) {
-                    System.out.println(c.username);
-                }
-                System.out.println("test");
-                userResponse = br.readLine();
-                boolean usernameTaken = false;
-                for(Client c: Server.clientList) {
-                    System.out.println(c.username);
-                    if( c.username.equals(userResponse)) {
-                        System.out.println("This username is taken. Try a new one.");
-                        usernameTaken = true;
-                        break;
-                    }
-                }
-                if(!usernameTaken) {
-                    username = userResponse;
-                    pr.println(username);
-                    pr.flush();
-                }
-            } //loops until a vaild username is entered.
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        while(socket.isConnected()) {
-            System.out.println("Hello "+ username + ", enter message to send");
-            try {
-                String message;
-                message = br.readLine();
-                pr.println(message);
-                pr.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+//        try {
+//            String userResponse = null;
+//            while( username == null) {
+//                System.out.println("Enter a username.");
+//                for( Client c : Server.clientList) {
+//                    System.out.println(c.username);
+//                }
+//                System.out.println("test");
+//                userResponse = br.readLine();
+//                boolean usernameTaken = false;
+//                for(Client c: Server.clientList) {
+//                    System.out.println(c.username);
+//                    if( c.username.equals(userResponse)) {
+//                        System.out.println("This username is taken. Try a new one.");
+//                        usernameTaken = true;
+//                        break;
+//                    }
+//                }
+//                if(!usernameTaken) {
+//                    username = userResponse;
+//                    pr.println(username);
+//                    pr.flush();
+//                }
+//            } //loops until a vaild username is entered.
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        while(socket.isConnected()) {
+//            System.out.println("Hello "+ username + ", enter message to send");
+//            try {
+//                String message;
+//                message = br.readLine();
+//                pr.println(message);
+//                pr.flush();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     @Override
     public void run() {
-        Socket socket = null;
-        try {
-            socket = new Socket("localhost", 8001);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        PrintWriter pr = null;
-        try {
-            pr = new PrintWriter(socket.getOutputStream());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        br = new BufferedReader(new InputStreamReader(System.in));
-
-
-        try {
-            String userResponse = null;
-            while( username == null) {
-                System.out.println("Enter a username.");
-                for( Client c : Server.clientList) {
-                    System.out.println(c.username);
-                }
-                System.out.println("test");
-                userResponse = br.readLine();
-                boolean usernameTaken = false;
-                for(Client c: Server.clientList) {
-                    System.out.println(c.username);
-                    if( c.username.equals(userResponse)) {
-                        System.out.println("This username is taken. Try a new one.");
-                        usernameTaken = true;
-                        break;
-                    }
-                }
-                if(!usernameTaken) {
-                    username = userResponse;
-                    pr.println(username);
-                    pr.flush();
-                }
-            } //loops until a vaild username is entered.
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        while(socket.isConnected()) {
-            System.out.println("Hello "+ username + ", enter message to send");
-            try {
-                String message;
-                message = br.readLine();
-                pr.println(message);
-                pr.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        System.out.println("howdy from client thready");
     }
-
 
 
     public static void createFrame()
@@ -138,6 +84,7 @@ public class Client implements Runnable {
             @Override
             public void run()
             {
+                //Setup for main frame
                 JFrame frame = new JFrame("Welcome to " + Server.getServerName() + " !");
                 frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 try
@@ -149,18 +96,33 @@ public class Client implements Runnable {
                 JPanel panel = new JPanel();
                 panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
                 panel.setOpaque(true);
-                JTextArea textArea = new JTextArea(15, 50);
+
+                //Setup for text area in center
+                JTextArea textArea = new JTextArea("",15, 50);
                 textArea.setWrapStyleWord(true);
                 textArea.setEditable(false);
                 textArea.setFont(Font.getFont(Font.SANS_SERIF));
+
+
                 JScrollPane scroller = new JScrollPane(textArea);
                 scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
                 scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+                //Setup for bottom entry section
                 JPanel inputpanel = new JPanel();
                 inputpanel.setLayout(new FlowLayout());
                 JTextField input = new JTextField(20);
+                input.setText("input");
                 JButton button = new JButton("Send");
-                button.addActionListener(e -> frame.setTitle(input.getText()));
+                button.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if(!Objects.equals(input.getText(), "")) {
+                            textArea.setText(textArea.getText() + input.getText() + "\n");
+                            input.setText("");
+                        }
+                    }
+                });
                 input.addKeyListener(new KeyListener() {
                     @Override
                     public void keyTyped(KeyEvent e) {
@@ -168,8 +130,8 @@ public class Client implements Runnable {
 
                     @Override
                     public void keyPressed(KeyEvent e) {
-                        if(e.getKeyCode() == 10) {
-                            frame.setTitle(input.getText());
+                        if(e.getKeyCode() == 10 && !Objects.equals(input.getText(), "")) {
+                            textArea.setText(textArea.getText() + input.getText() + "\n");
                             input.setText("");
                         }
                     }
