@@ -1,24 +1,17 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Server implements Runnable {
-    
+
     private static String serverName = "Computer Engineers";
     private static ArrayList<Socket> socketList = new ArrayList<Socket>();
-    public static ArrayList<Client> clientList = new ArrayList<Client>();
+    public static ArrayList<ClientData> clientList = new ArrayList<ClientData>();
 
     @Override
     public void run() {
-        ExecutorService executor = Executors.newFixedThreadPool(10);
-
         System.out.println("[SERVER STARTED]");
         ServerSocket server = null;
         try {
@@ -29,21 +22,13 @@ public class Server implements Runnable {
 
 
         while (true) {
-            //Prints the state of the server and the respective time
-            Date date = new Date();
-            System.out.println("--------\n" + "Welcome to the " + serverName + " Server!\n" +
-                    + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() +  " - "
-                    + socketList.size() + " clients are connected.\n--------");
-
-            if(!socketList.isEmpty()) {
-                for(Socket s: socketList) {
-                    try {
-                        executor.execute(new ClientMessageHandler(s));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+            if(!clientList.isEmpty()) {
+                for(ClientData c : clientList) {
+                    System.out.println(c.clientUsername());
                 }
             }
+            //Prints the state of the server and the respective time
+            System.out.println(getServerWelcomeMessage());
 
 
             //Accepts any clients created by the thread above (and technically any other request by browsers, ...)
@@ -63,5 +48,12 @@ public class Server implements Runnable {
 
     public static String getServerName() {
         return serverName;
+    }
+
+    public static String getServerWelcomeMessage() {
+        Date date = new Date();
+        return "--------\n" + "Welcome to the " + serverName + " Server!\n" +
+                + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() +  " - "
+                + socketList.size() + " clients are connected.\n--------";
     }
 }//closes Server

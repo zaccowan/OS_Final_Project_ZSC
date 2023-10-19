@@ -1,3 +1,4 @@
+import javax.management.timer.Timer;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -5,11 +6,16 @@ import java.util.concurrent.Executors;
 public class Application {
     public static void main(String[] args) throws IOException {
 
-        ExecutorService clientExecutor = Executors.newFixedThreadPool(2);
-        ExecutorService serverExecutor = Executors.newSingleThreadExecutor();
-        serverExecutor.execute(new Server());
-        clientExecutor.execute(new Client());
-        clientExecutor.execute(new Client());
+        final int NUM_CLIENTS = 2;
+
+        try {
+            ExecutorService clientExecutor = Executors.newFixedThreadPool(NUM_CLIENTS);
+            ExecutorService serverExecutor = Executors.newSingleThreadExecutor();
+            serverExecutor.execute(new Server());
+            clientExecutor.submit(new Client());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

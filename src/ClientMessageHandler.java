@@ -5,10 +5,10 @@ import java.net.Socket;
 
 public class ClientMessageHandler implements Runnable{
 
-    InputStreamReader isr;
-    BufferedReader br;
-    Socket socket;
-    String username = null;
+    private InputStreamReader isr;
+    private BufferedReader br;
+    private Socket socket;
+    private String username = null;
 
     public ClientMessageHandler(Socket s) throws IOException {
         this.socket = s;
@@ -24,7 +24,6 @@ public class ClientMessageHandler implements Runnable{
                     username = br.readLine();
                 }
                 System.out.println(username.toUpperCase() + ":  " + br.readLine());
-//				System.out.println( "Client #" + socket.getPort() + ":   " + br.readLine());
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
