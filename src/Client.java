@@ -25,8 +25,8 @@ public class Client implements Runnable {
     private PrintWriter pr;
 
     //Used for recieving message through socket.
-    InputStreamReader isr;
-    BufferedReader br;
+    private InputStreamReader isr;
+    private BufferedReader br;
 
     //Client Chat Data
     private String chatContent;
@@ -43,7 +43,8 @@ public class Client implements Runnable {
     {
         //
         //Setup for main frame
-        JFrame frame = new JFrame("Welcome to " + Server.getServerName() + " ! Thread: " +Thread.currentThread().threadId());
+        JFrame frame = new JFrame("Welcome to " + Server.getServerName() +
+                " ! Thread: " + Thread.currentThread().threadId());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         try
         {

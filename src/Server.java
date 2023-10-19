@@ -29,15 +29,6 @@ public class Server implements Runnable {
 
 
         while (true) {
-            if(!socketList.isEmpty()) {
-                for(Socket socket : socketList) {
-                    try {
-                        messageExecutor.execute(new ClientMessageHandler(socket));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
             //Prints the state of the server and the respective time
             System.out.println(getServerWelcomeMessage());
 
@@ -46,6 +37,7 @@ public class Server implements Runnable {
             Socket socket = null;
             try {
                 socket = server.accept();
+                messageExecutor.execute(new ClientMessageHandler(socket));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
