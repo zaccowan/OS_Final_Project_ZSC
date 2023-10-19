@@ -10,7 +10,7 @@ public class Server implements Runnable {
 
     private static String serverName = "Computer Engineers";
     private static ArrayList<Socket> socketList = new ArrayList<Socket>();
-    public static ArrayList<ClientData> clientList = new ArrayList<ClientData>();
+    private static ArrayList<ClientData> clientList = new ArrayList<ClientData>();
     ExecutorService messageExecutor;
 
     public Server(int numClients) {
@@ -33,7 +33,6 @@ public class Server implements Runnable {
                 for(Socket socket : socketList) {
                     try {
                         messageExecutor.execute(new ClientMessageHandler(socket));
-                        System.out.println("test");
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -67,5 +66,12 @@ public class Server implements Runnable {
         return "--------\n" + "Welcome to the " + serverName + " Server!\n" +
                 + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() +  " - "
                 + socketList.size() + " clients are connected.\n--------";
+    }
+
+    public static void addClientToList(ClientData clientData) {
+        clientList.add(clientData);
+    }
+    public static ArrayList<ClientData> getClientList() {
+        return clientList;
     }
 }//closes Server

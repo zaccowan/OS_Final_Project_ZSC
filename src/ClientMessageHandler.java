@@ -24,13 +24,12 @@ public class ClientMessageHandler implements Runnable{
                 if( username == null) {
                     username = br.readLine();
                     clientData.setUsername(username);
-                    Server.clientList.add(clientData);
-                    System.out.println("Username: " + clientData.getUsername());
+                    Server.addClientToList(clientData);
+                    System.out.println("Username: " + Server.getClientList().get(0).getUsername());
                 }else {
                     System.out.println(clientData.getUsername().toUpperCase() + ":  " + br.readLine());
                 }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }

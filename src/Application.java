@@ -7,12 +7,16 @@ public class Application {
     public static void main(String[] args) throws IOException {
 
         final int NUM_CLIENTS = 2;
+        ExecutorService clientExecutor;
+        ExecutorService serverExecutor;
 
         try {
-            ExecutorService clientExecutor = Executors.newFixedThreadPool(NUM_CLIENTS);
-            ExecutorService serverExecutor = Executors.newSingleThreadExecutor();
+            clientExecutor = Executors.newFixedThreadPool(NUM_CLIENTS);
+            serverExecutor = Executors.newSingleThreadExecutor();
             serverExecutor.execute(new Server(NUM_CLIENTS));
-            clientExecutor.submit(new Client());
+            for(int i = 0 ; i < NUM_CLIENTS ; i++) {
+                clientExecutor.submit(new Client());
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

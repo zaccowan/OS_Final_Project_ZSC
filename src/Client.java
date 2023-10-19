@@ -41,10 +41,9 @@ public class Client implements Runnable {
     @Override
     public void run()
     {
-
         //
         //Setup for main frame
-        JFrame frame = new JFrame("Welcome to " + Server.getServerName() + " !");
+        JFrame frame = new JFrame("Welcome to " + Server.getServerName() + " ! Thread: " +Thread.currentThread().threadId());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         try
         {
@@ -123,7 +122,6 @@ public class Client implements Runnable {
         frame.setLocationByPlatform(true);
         frame.setVisible(true);
         frame.setResizable(false);
-        input.requestFocus();
 
 
     }
@@ -132,7 +130,7 @@ public class Client implements Runnable {
         userResponse = input.getText();
         if(username == null) {
             boolean usernameTaken = false;
-            for(ClientData c: Server.clientList) {
+            for(ClientData c: Server.getClientList()) {
                 System.out.println(c.getUsername());
                 try {
                     if (c.getUsername().equals(userResponse)) {
