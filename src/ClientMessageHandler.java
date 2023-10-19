@@ -8,22 +8,27 @@ public class ClientMessageHandler implements Runnable{
     private InputStreamReader isr;
     private BufferedReader br;
     private Socket socket;
-    private String username = null;
+    private String username;
+    private ClientData clientData;
 
-    public ClientMessageHandler(Socket s) throws IOException {
-        this.socket = s;
-        isr = new InputStreamReader(s.getInputStream());
+    public ClientMessageHandler(Socket socket) throws IOException {
+        clientData = new ClientData(socket, "User" + socket.getLocalPort());
+        isr = new InputStreamReader(socket.getInputStream());
         br = new BufferedReader(isr);
     }
 
     @Override
     public void run() {
-        while(socket.isConnected()) {
+        while(true) {
             try {
                 if( username == null) {
                     username = br.readLine();
+                    clientData.setUsername(username);
+                    Server.clientList.add(clientData);
+                    System.out.println("Username: " + clientData.getUsername());
+                }else {
+                    System.out.println(clientData.getUsername().toUpperCase() + ":  " + br.readLine());
                 }
-                System.out.println(username.toUpperCase() + ":  " + br.readLine());
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

@@ -3,12 +3,19 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server implements Runnable {
 
     private static String serverName = "Computer Engineers";
     private static ArrayList<Socket> socketList = new ArrayList<Socket>();
     public static ArrayList<ClientData> clientList = new ArrayList<ClientData>();
+    ExecutorService messageExecutor;
+
+    public Server(int numClients) {
+        messageExecutor = Executors.newFixedThreadPool(numClients);
+    }
 
     @Override
     public void run() {
@@ -22,9 +29,14 @@ public class Server implements Runnable {
 
 
         while (true) {
-            if(!clientList.isEmpty()) {
-                for(ClientData c : clientList) {
-                    System.out.println(c.clientUsername());
+            if(!socketList.isEmpty()) {
+                for(Socket socket : socketList) {
+                    try {
+                        messageExecutor.execute(new ClientMessageHandler(socket));
+                        System.out.println("test");
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
             //Prints the state of the server and the respective time

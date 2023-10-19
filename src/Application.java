@@ -11,7 +11,7 @@ public class Application {
         try {
             ExecutorService clientExecutor = Executors.newFixedThreadPool(NUM_CLIENTS);
             ExecutorService serverExecutor = Executors.newSingleThreadExecutor();
-            serverExecutor.execute(new Server());
+            serverExecutor.execute(new Server(NUM_CLIENTS));
             clientExecutor.submit(new Client());
         } catch (IOException e) {
             throw new RuntimeException(e);

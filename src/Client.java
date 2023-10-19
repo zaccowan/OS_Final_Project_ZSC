@@ -20,7 +20,13 @@ public class Client implements Runnable {
     private String username = null;
     private String userResponse;
     private Socket socket;
+
+    //Used for sending message through socket.
     private PrintWriter pr;
+
+    //Used for recieving message through socket.
+    InputStreamReader isr;
+    BufferedReader br;
 
     //Client Chat Data
     private String chatContent;
@@ -28,6 +34,8 @@ public class Client implements Runnable {
     public Client() throws UnknownHostException, IOException {
         socket = new Socket("localhost", 8001);
         pr = new PrintWriter(socket.getOutputStream());
+        isr = new InputStreamReader(socket.getInputStream());
+        br = new BufferedReader(isr);
     }
 
     @Override
@@ -71,6 +79,7 @@ public class Client implements Runnable {
         if( username == null) {
             textArea.setText(Server.getServerWelcomeMessage() + "\nEnter a username.\n");
         }else {
+
             textArea.setText(chatContent);
         }
         button.addActionListener(new ActionListener() {
@@ -124,9 +133,9 @@ public class Client implements Runnable {
         if(username == null) {
             boolean usernameTaken = false;
             for(ClientData c: Server.clientList) {
-                System.out.println(c.clientUsername());
+                System.out.println(c.getUsername());
                 try {
-                    if (c.clientUsername().equals(userResponse)) {
+                    if (c.getUsername().equals(userResponse)) {
                         textArea.setText("This username is taken. Try a new one.");
                         usernameTaken = true;
                         break;
@@ -138,14 +147,22 @@ public class Client implements Runnable {
             if(!usernameTaken) {
                 textArea.setText("");
                 username = userResponse;
-                Server.clientList.add(new ClientData(this.socket,this.username));
+//                Server.clientList.add(new ClientData(this.socket,this.username));
                 pr.println(username);
                 pr.flush();
             }
+        }else {
+            textArea.setText(textArea.getText() + userResponse + "\n");
+            pr.println(userResponse);
+            pr.flush();
         }
-        textArea.setText(textArea.getText() + userResponse + "\n");
+        userResponse = "";
         input.setText("");
 
+    }
+
+    private String getMessage() {
+        return null;
     }
 
 }//Closes Class
