@@ -8,7 +8,6 @@ public class ClientMessageHandler implements Runnable{
     InputStreamReader isr;
     BufferedReader br;
     Socket socket;
-
     String username = null;
 
     public ClientMessageHandler(Socket s) throws IOException {

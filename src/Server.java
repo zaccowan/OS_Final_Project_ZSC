@@ -9,41 +9,93 @@ import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Server {
+public class Server implements Runnable {
 
+
+    private static String serverName = "Computer Engineers";
     private static ArrayList<Socket> socketList = new ArrayList<Socket>();
+    public static ArrayList<Client> clientList = new ArrayList<Client>();
 
-    public static void main(String [] args) throws IOException {
+//    public static void main(String [] args) throws IOException {
+//
+//        ExecutorService executor = Executors.newFixedThreadPool(10);
+//
+//        System.out.println("[SERVER STARTED]");
+//        ServerSocket server = new ServerSocket(8001);
+//
+//
+//        while (true) {
+//            //Prints the state of the server and the respective time
+//            Date date = new Date();
+//            System.out.println("--------\n" + "Welcome to the " + serverName + " Server!\n" +
+//                    + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() +  " - "
+//                    + socketList.size() + " clients are connected.\n--------");
+//
+//            if(!socketList.isEmpty()) {
+//                for(Socket s: socketList) {
+//                    executor.execute(new ClientMessageHandler(s));
+//                }
+//            }
+//
+//
+//            //Accepts any clients created by the thread above (and technically any other request by browsers, ...)
+//            Socket socket = server.accept();
+//            socketList.add(socket);
+//
+//            System.out.println("Client #" + socket.getPort() + " has connected.");
+//
+//
+//        } //closes while
+//
+//    }//closes main()
 
+    @Override
+    public void run() {
         ExecutorService executor = Executors.newFixedThreadPool(10);
 
         System.out.println("[SERVER STARTED]");
-        ServerSocket server = new ServerSocket(8001);
+        ServerSocket server = null;
+        try {
+            server = new ServerSocket(8001);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
 
         while (true) {
             //Prints the state of the server and the respective time
             Date date = new Date();
-            System.out.println("--------\n"
+            System.out.println("--------\n" + "Welcome to the " + serverName + " Server!\n" +
                     + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() +  " - "
                     + socketList.size() + " clients are connected.\n--------");
 
             if(!socketList.isEmpty()) {
                 for(Socket s: socketList) {
-                    executor.execute(new ClientMessageHandler(s));
+                    try {
+                        executor.execute(new ClientMessageHandler(s));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
 
 
             //Accepts any clients created by the thread above (and technically any other request by browsers, ...)
-            Socket socket = server.accept();
-
+            Socket socket = null;
+            try {
+                socket = server.accept();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             socketList.add(socket);
+
             System.out.println("Client #" + socket.getPort() + " has connected.");
 
 
         } //closes while
+    }
 
-    }//closes main()
-
+    public static String getServerName() {
+        return serverName;
+    }
 }//closes Server

@@ -1,5 +1,15 @@
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Application {
-    public static void main(String[] args) {
-        System.out.println("Hello world!");
+    public static void main(String[] args) throws IOException {
+
+        ExecutorService clientExecutor = Executors.newFixedThreadPool(1);
+        ExecutorService serverExecutor = Executors.newSingleThreadExecutor();
+        serverExecutor.execute(new Server());
+        clientExecutor.execute(new Client());
+
     }
+
 }
