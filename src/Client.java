@@ -5,12 +5,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Client implements Runnable {
     //Stores all the clients that have been created.
@@ -29,7 +36,7 @@ public class Client implements Runnable {
     private BufferedReader br;
 
     //Client Chat Data
-    private String chatContent;
+    private String chatContent = "";
 
     public Client() throws UnknownHostException, IOException {
         socket = new Socket("localhost", 8001);
@@ -59,7 +66,7 @@ public class Client implements Runnable {
 
         //
         //Setup for text area in center
-        JTextArea textArea = new JTextArea(chatContent,15, 50);
+        JTextArea textArea = new JTextArea("",15, 50);
         textArea.setWrapStyleWord(true);
         textArea.setEditable(false);
         textArea.setFont(Font.getFont(Font.SANS_SERIF));
@@ -76,39 +83,35 @@ public class Client implements Runnable {
         JTextField input = new JTextField(20);
         JButton button = new JButton("Send");
 
-        if( username == null) {
+        if(username == null) {
             textArea.setText(Server.getServerWelcomeMessage() + "\nEnter a username.\n");
-        }else {
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    //Submit input field on submit button click if not empty
+                    if(!input.getText().isEmpty()) {
+                        submitHandler(input, textArea);
+                    }
+                }
+            });
+            input.addKeyListener(new KeyListener() {
+                @Override
+                public void keyTyped(KeyEvent e) {
+                }
 
-            textArea.setText(chatContent);
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    //Submit input field on enter key if not empty
+                    if(e.getKeyCode() == 10 && !input.getText().isEmpty()) {
+                        submitHandler(input, textArea);
+                    }
+                }
+
+                @Override
+                public void keyReleased(KeyEvent e) {
+                }
+            });
         }
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //Submit input field on submit button click if not empty
-                if(!input.getText().isEmpty()) {
-                    usernameHandler(input, textArea);
-                }
-            }
-        });
-        input.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                //Submit input field on enter key if not empty
-                if(e.getKeyCode() == 10 && !input.getText().isEmpty()) {
-                    usernameHandler(input, textArea);
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-            }
-        });
-
 
         //
         //Final Composition and Rendering
@@ -124,15 +127,30 @@ public class Client implements Runnable {
         frame.setVisible(true);
         frame.setResizable(false);
 
+        //Once frame is loaded, loop here and read from messages sent to socket
+        while (true) {
+            try {
+                String messageRecieved = br.readLine();
+                System.out.println(messageRecieved);
 
-    }
+                if(!messageRecieved.equals("null")) {
+                    chatContent += messageRecieved + "\n";
+                    textArea.setText(chatContent);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-    private void usernameHandler(JTextField input, JTextArea textArea) {
+    }//closes run()
+
+
+
+    private void submitHandler(JTextField input, JTextArea textArea){
         userResponse = input.getText();
         if(username == null) {
             boolean usernameTaken = false;
             for(ClientData c: Server.getClientList()) {
-                System.out.println(c.getUsername());
                 try {
                     if (c.getUsername().equals(userResponse)) {
                         textArea.setText("This username is taken. Try a new one.");
@@ -140,28 +158,25 @@ public class Client implements Runnable {
                         break;
                     }
                 } catch (NullPointerException e) {
-                    continue;
                 }
             }
             if(!usernameTaken) {
-                textArea.setText("");
                 username = userResponse;
-//                Server.clientList.add(new ClientData(this.socket,this.username));
+                chatContent = "You have chosen the username: " + username + "\n";
+                textArea.setText(chatContent);
                 pr.println(username);
                 pr.flush();
             }
         }else {
-            textArea.setText(textArea.getText() + userResponse + "\n");
-            pr.println(userResponse);
-            pr.flush();
+            if(userResponse != null) {
+                chatContent += "You: " + userResponse + "\n";
+                textArea.setText(chatContent);
+                pr.println(userResponse);
+                pr.flush();
+            }
         }
         userResponse = "";
         input.setText("");
-
-    }
-
-    private String getMessage() {
-        return null;
     }
 
 }//Closes Class
