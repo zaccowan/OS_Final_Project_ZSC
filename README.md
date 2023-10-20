@@ -39,7 +39,7 @@ There is no database management going on since the focus of this project is mana
 - "/" Client commands: change username, ...
 - Using "@{username or client id}" to send a message to a specific client
 - Ability to send files
-- Render messages on server specific to each client
+- ISSUE: a message from other users renders however many times youve sent a message.
 
 ### Server Side
 - Server does not yet handle termination of client connection
