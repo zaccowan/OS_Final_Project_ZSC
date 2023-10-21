@@ -5,19 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.EventListener;
-import java.util.Objects;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class Client implements Runnable {
     //Stores all the clients that have been created.
@@ -25,13 +15,12 @@ public class Client implements Runnable {
 
     //Client Identification
     private String username = null;
-    private String userResponse;
-    private Socket socket;
+    private final Socket socket;
 
     //Used for sending message through socket.
     private PrintWriter pr;
 
-    //Used for recieving message through socket.
+    //Used for receiving message through socket.
     private InputStreamReader isr;
     private BufferedReader br;
 
@@ -51,7 +40,8 @@ public class Client implements Runnable {
         //
         //Setup for main frame
         JFrame frame = new JFrame("Welcome to " + Server.getServerName() +
-                " ! Thread: " + Thread.currentThread().threadId());
+//                " ! Thread: " + Thread.currentThread().threadId() +
+                "Socket: " + socket.getLocalPort());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         try
         {
@@ -128,11 +118,9 @@ public class Client implements Runnable {
         frame.setResizable(false);
 
         //Once frame is loaded, loop here and read from messages sent to socket
-        while (true) {
+        while(true) {
             try {
                 String messageRecieved = br.readLine();
-                System.out.println(messageRecieved);
-
                 if(!messageRecieved.equals("null")) {
                     chatContent += messageRecieved + "\n";
                     textArea.setText(chatContent);
@@ -142,22 +130,22 @@ public class Client implements Runnable {
             }
         }
 
+
     }//closes run()
 
 
 
     private void submitHandler(JTextField input, JTextArea textArea){
-        userResponse = input.getText();
+        String userResponse = input.getText();
         if(username == null) {
             boolean usernameTaken = false;
-            for(ClientData c: Server.getClientList()) {
-                try {
-                    if (c.getUsername().equals(userResponse)) {
-                        textArea.setText("This username is taken. Try a new one.");
-                        usernameTaken = true;
-                        break;
-                    }
-                } catch (NullPointerException e) {
+            for(ClientMessageHandler clientHandler : Server.getClientHandlerList()) {
+                System.out.println(clientHandler.getUsername());
+                if (userResponse.equals(clientHandler.getUsername())) {
+                    chatContent = "Username taken. Try a new one.";
+                    textArea.setText(chatContent);
+                    usernameTaken = true;
+                    break;
                 }
             }
             if(!usernameTaken) {
@@ -168,7 +156,7 @@ public class Client implements Runnable {
                 pr.flush();
             }
         }else {
-            if(userResponse != null) {
+            if(userResponse != null ) {
                 chatContent += "You: " + userResponse + "\n";
                 textArea.setText(chatContent);
                 pr.println(userResponse);

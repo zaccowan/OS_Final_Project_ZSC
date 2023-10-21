@@ -3,18 +3,20 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Handler;
 
 public class Server implements Runnable {
 
     private static String serverName = "Computer Engineers";
-    private static ArrayList<Socket> socketList = new ArrayList<Socket>();
-    private static ArrayList<ClientData> clientList = new ArrayList<ClientData>();
-    ExecutorService messageExecutor;
+    private static final ArrayList<Socket> socketList = new ArrayList<Socket>();
+    private static final ArrayList<ClientMessageHandler> clientHandlerList = new ArrayList<ClientMessageHandler>();
+    private final ExecutorService messageReceiverExecutor;
 
     public Server(int numClients) {
-        messageExecutor = Executors.newFixedThreadPool(numClients);
+        messageReceiverExecutor = Executors.newFixedThreadPool(numClients);
     }
 
     @Override
@@ -27,24 +29,24 @@ public class Server implements Runnable {
             throw new RuntimeException(e);
         }
 
-
         while (true) {
             //Prints the state of the server and the respective time
             System.out.println(getServerWelcomeMessage());
 
 
-            //Accepts any clients created by the thread above (and technically any other request by browsers, ...)
-            Socket socket = null;
+            //Accepts Client request made in Client.java (and technically any other request by browsers, ...)
+            Socket socket;
             try {
                 socket = server.accept();
-                messageExecutor.execute(new ClientMessageHandler(socket));
+                ClientMessageHandler handler = new ClientMessageHandler(socket);
+                messageReceiverExecutor.execute(handler);
+                clientHandlerList.add(handler);
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             socketList.add(socket);
-
             System.out.println("Client #" + socket.getPort() + " has connected.");
-
 
         } //closes while
     }
@@ -60,10 +62,11 @@ public class Server implements Runnable {
                 + socketList.size() + " clients are connected.\n--------";
     }
 
-    public static void addClientToList(ClientData clientData) {
-        clientList.add(clientData);
+    public static ArrayList<Socket> getSocketList() {
+        return socketList;
     }
-    public static ArrayList<ClientData> getClientList() {
-        return clientList;
+    public static ArrayList<ClientMessageHandler> getClientHandlerList() {
+        return clientHandlerList;
     }
+
 }//closes Server

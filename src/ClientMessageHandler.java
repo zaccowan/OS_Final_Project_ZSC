@@ -6,20 +6,14 @@ import java.net.Socket;
 
 public class ClientMessageHandler implements Runnable{
 
-    private static boolean criticalSectionOpen;
-    PrintWriter pr;
-    private InputStreamReader isr;
-    private BufferedReader br;
-    private Socket socket;
-    private String username = null;
-    private String userMessage = null;
-    private ClientData clientData;
+    private final BufferedReader br;
+    private final Socket socket;
+    private String username;
 
     public ClientMessageHandler(Socket socket) throws IOException {
-        clientData = new ClientData(socket, "User" + socket.getLocalPort());
-        isr = new InputStreamReader(socket.getInputStream());
+        this.socket = socket;
+        InputStreamReader isr = new InputStreamReader(socket.getInputStream());
         br = new BufferedReader(isr);
-        criticalSectionOpen = false;
     }
 
     @Override
@@ -28,31 +22,30 @@ public class ClientMessageHandler implements Runnable{
             try {
                 if( username == null) {
                     username = br.readLine();
-                    clientData.setUsername(username);
-                }else {
-                    userMessage = br.readLine();
-                    System.out.println(clientData.getUsername().toUpperCase() + ":  " + userMessage);
-                }
-                while(criticalSectionOpen) {}
-                if(!criticalSectionOpen) {
-                    criticalSectionOpen = true;
-                    Server.addClientToList(clientData);
-                    for(ClientData client : Server.getClientList()) {
-                        if(!client.getUsername().equals(this.username) && userMessage != null ) {
-                            pr = new PrintWriter(client.getSocket().getOutputStream());
+                } else {
+                    String userMessage = br.readLine();
+                    System.out.println(userMessage);
+                    for( Socket recipientSocket : Server.getSocketList() ) {
+                        if( this.socket.equals(recipientSocket) ) {
+                            continue;
+                        } else {
+                            System.out.println("Diff Socket");
+                            System.out.println("[SERVER] sending message to " + recipientSocket.getPort()
+                                    + ": " + userMessage );
+                            PrintWriter pr = new PrintWriter(recipientSocket.getOutputStream());
                             pr.println(this.username + ": " + userMessage);
                             pr.flush();
-                            System.out.println("[SERVER] Message sent to " + client.getUsername()
-                                    + "(" + client.getSocket().getPort() + ")"
-                                    + " by " + username+ ":\t"+ userMessage);
                         }
                     }
-                    criticalSectionOpen = false;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }//closes run()
+
+    public String getUsername() {
+        return this.username;
     }
 
 }
