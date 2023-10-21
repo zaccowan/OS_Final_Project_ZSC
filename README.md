@@ -28,7 +28,10 @@ There is no database management going on since the focus of this project is mana
 
 ### Server Features
 - Server displays number of actively connected clients upon a change (client connection/disconnection)
-- Server displays messages from clients with username 
+- Server displays messages from clients with username
+
+###
+- Simple Graphical Interface for client on the server.
 
 <br>
 <br>
@@ -38,19 +41,18 @@ There is no database management going on since the focus of this project is mana
 ### Client Side
 - "/" Client commands: change username, ...
 - Using "@{username or client id}" to send a message to a specific client
+- Client disconnect handling.
 - Ability to send files
-- ISSUE: a message from other users renders however many times youve sent a message.
 
 ### Server Side
 - Server does not yet handle termination of client connection
 - Ability to have server details: name, description, ...
 - Ability to kick users from server
+- Proper Server termination
 
 <br>
 <br>
 
-## Features I Might Add for Fun
-- GUI so clients can have a better experience than a console based interface
 
 
 
