@@ -8,6 +8,8 @@ import java.awt.event.KeyListener;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Client implements Runnable {
     //Stores all the clients that have been created.
@@ -32,6 +34,11 @@ public class Client implements Runnable {
         pr = new PrintWriter(socket.getOutputStream());
         isr = new InputStreamReader(socket.getInputStream());
         br = new BufferedReader(isr);
+    }
+
+    public static void main(String [] args) throws IOException {
+        ExecutorService clientExecutor = Executors.newSingleThreadExecutor();
+        clientExecutor.execute(new Client());
     }
 
     @Override
@@ -140,7 +147,7 @@ public class Client implements Runnable {
         if(username == null) {
             boolean usernameTaken = false;
             for(ClientMessageHandler clientHandler : Server.getClientHandlerList()) {
-                System.out.println(clientHandler.getUsername());
+                //System.out.println(clientHandler.getUsername());
                 if (userResponse.equals(clientHandler.getUsername())) {
                     chatContent = "Username taken. Try a new one.";
                     textArea.setText(chatContent);

@@ -24,12 +24,10 @@ public class ClientMessageHandler implements Runnable{
                     username = br.readLine();
                 } else {
                     String userMessage = br.readLine();
-                    System.out.println(userMessage);
                     for( Socket recipientSocket : Server.getSocketList() ) {
                         if( this.socket.equals(recipientSocket) ) {
                             continue;
                         } else {
-                            System.out.println("Diff Socket");
                             System.out.println("[SERVER] sending message to " + recipientSocket.getPort()
                                     + ": " + userMessage );
                             PrintWriter pr = new PrintWriter(recipientSocket.getOutputStream());

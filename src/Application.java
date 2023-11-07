@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 public class Application {
     public static void main(String[] args) throws IOException {
 
-        final int NUM_CLIENTS = 3;
+        final int NUM_CLIENTS = 2;
         ExecutorService clientExecutor;
         ExecutorService serverExecutor;
 
