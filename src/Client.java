@@ -1,10 +1,7 @@
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -87,7 +84,7 @@ public class Client implements Runnable {
                 public void actionPerformed(ActionEvent e) {
                     //Submit input field on submit button click if not empty
                     if(!input.getText().isEmpty()) {
-                        submitHandler(input, textArea);
+                        submitHandler(input, textArea, frame);
                     }
                 }
             });
@@ -100,7 +97,7 @@ public class Client implements Runnable {
                 public void keyPressed(KeyEvent e) {
                     //Submit input field on enter key if not empty
                     if(e.getKeyCode() == 10 && !input.getText().isEmpty()) {
-                        submitHandler(input, textArea);
+                        submitHandler(input, textArea, frame);
                     }
                 }
 
@@ -109,6 +106,15 @@ public class Client implements Runnable {
                 }
             });
         }
+
+        frame.addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                doClose(frame);
+            }
+        });
 
         //
         //Final Composition and Rendering
@@ -142,12 +148,11 @@ public class Client implements Runnable {
 
 
 
-    private void submitHandler(JTextField input, JTextArea textArea){
+    private void submitHandler(JTextField input, JTextArea textArea, JFrame frame){
         String userResponse = input.getText();
         if(username == null) {
             boolean usernameTaken = false;
             for(ClientMessageHandler clientHandler : Server.getClientHandlerList()) {
-                //System.out.println(clientHandler.getUsername());
                 if (userResponse.equals(clientHandler.getUsername())) {
                     chatContent = "Username taken. Try a new one.";
                     textArea.setText(chatContent);
@@ -164,15 +169,25 @@ public class Client implements Runnable {
             }
         }else {
             if(userResponse != null ) {
-                chatContent += "You: " + userResponse + "\n";
-                textArea.setText(chatContent);
-                pr.println(userResponse);
-                pr.flush();
+                if(userResponse.equals("/quit")) {
+                    doClose(frame);
+                } else {
+                    chatContent += "You: " + userResponse + "\n";
+                    textArea.setText(chatContent);
+                    pr.println(userResponse);
+                    pr.flush();
+                }
             }
         }
-        userResponse = "";
         input.setText("");
     }
+
+    private void doClose(JFrame frame) {
+        frame.dispose();
+        pr.println("/quit");
+        pr.flush();
+    }
+
 
 }//Closes Class
 

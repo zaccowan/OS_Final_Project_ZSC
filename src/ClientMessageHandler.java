@@ -24,10 +24,22 @@ public class ClientMessageHandler implements Runnable{
                     username = br.readLine();
                 } else {
                     String userMessage = br.readLine();
+                    if( userMessage.equals("/quit")) {
+                        System.out.println(username + " has disconnected.");
+                        for( Socket recipientSocket : Server.getSocketList() ) {
+                            if( !this.socket.equals(recipientSocket) ) {
+                                System.out.println("[SERVER] sending disconnect to " + recipientSocket.getPort());
+                                PrintWriter pr = new PrintWriter(recipientSocket.getOutputStream());
+                                pr.println(this.username + " has disconnected.");
+                                pr.flush();
+                            }
+                        }
+                        Server.getSocketList().remove(socket);
+                        socket.close();
+                        return;
+                    }
                     for( Socket recipientSocket : Server.getSocketList() ) {
-                        if( this.socket.equals(recipientSocket) ) {
-                            continue;
-                        } else {
+                        if( !this.socket.equals(recipientSocket) ) {
                             System.out.println("[SERVER] sending message to " + recipientSocket.getPort()
                                     + ": " + userMessage );
                             PrintWriter pr = new PrintWriter(recipientSocket.getOutputStream());

@@ -3,10 +3,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Handler;
 
 public class Server implements Runnable {
 
@@ -41,7 +39,6 @@ public class Server implements Runnable {
                 ClientMessageHandler handler = new ClientMessageHandler(socket);
                 messageReceiverExecutor.execute(handler);
                 clientHandlerList.add(handler);
-
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
