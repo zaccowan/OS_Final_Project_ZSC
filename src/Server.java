@@ -5,10 +5,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Server implements Runnable {
 
     private static String serverName = "Computer Engineers";
+    private static boolean serverNameCriticalOpen = false;
+    private static LinkedBlockingQueue<Socket> editServerQueue = new LinkedBlockingQueue<>();
     private static final ArrayList<Socket> socketList = new ArrayList<Socket>();
     private static final ArrayList<ClientMessageHandler> clientHandlerList = new ArrayList<ClientMessageHandler>();
     private final ExecutorService messageReceiverExecutor;
@@ -52,11 +55,41 @@ public class Server implements Runnable {
         return serverName;
     }
 
+    // Returns true if server name critical section was closed and successfully written to
+    // Returns false if server name critical section was open and unable to be written to
+    public static boolean isServerNameCriticalOpen() {
+        return serverNameCriticalOpen;
+    }
+    public static void openServerNameCrical() {
+        serverNameCriticalOpen = true;
+    }
+    public static void setServerName(String newName) {
+        if( serverNameCriticalOpen == false) {
+            serverName = newName.substring(0, 30);
+            serverNameCriticalOpen = false;
+        }
+    }
+
+    public static String getServerWelcomeMessage(boolean displayNumConnected) {
+        Date date = new Date();
+        if( !displayNumConnected ) {
+            return "-------- -------- -------- -------- -------- --------\n"
+                    + "Welcome to the " + serverName + " Server!\n"
+                    + "-------- -------- -------- -------- -------- --------";
+        }
+        return "-------- -------- -------- -------- -------- --------\n"
+                + "Welcome to the " + serverName + " Server!\n" +
+                + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() +  " - "
+                + socketList.size() + " clients are connected.\n"
+                + "-------- -------- -------- -------- -------- --------";
+    }
     public static String getServerWelcomeMessage() {
         Date date = new Date();
-        return "--------\n" + "Welcome to the " + serverName + " Server!\n" +
+        return "-------- -------- -------- -------- -------- --------\n"
+                + "Welcome to the " + serverName + " Server!\n" +
                 + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() +  " - "
-                + socketList.size() + " clients are connected.\n--------";
+                + socketList.size() + " clients are connected.\n"
+                + "-------- -------- -------- -------- -------- --------";
     }
 
     public static ArrayList<Socket> getSocketList() {
@@ -64,6 +97,22 @@ public class Server implements Runnable {
     }
     public static ArrayList<ClientMessageHandler> getClientHandlerList() {
         return clientHandlerList;
+    }
+
+
+    public static void addToEditServerQueue(Socket client) {
+        editServerQueue.add(client);
+    }
+    public static void removeFromEditServerQueue(Socket client) {
+        editServerQueue.remove(client);
+    }
+    public static boolean isEditServerQueueEmpty() {
+        return editServerQueue.isEmpty();
+    }
+    public static boolean isNextToEdit(Socket socket) {
+        if(editServerQueue.isEmpty()) return false;
+        if( editServerQueue.peek().equals(socket) ) return true;
+        return false;
     }
 
 }//closes Server

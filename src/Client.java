@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,6 +15,7 @@ public class Client implements Runnable {
 
     //Client Identification
     private String username = null;
+    private String serverName = null;
     private final Socket socket;
 
     //Used for sending message through socket.
@@ -41,9 +43,18 @@ public class Client implements Runnable {
     @Override
     public void run()
     {
+
+        while(serverName == null) {
+            try {
+                serverName = br.readLine();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         //
         //Setup for main frame
-        JFrame frame = new JFrame("Welcome to " + Server.getServerName() +
+        JFrame frame = new JFrame("Welcome to " + serverName +
 //                " ! Thread: " + Thread.currentThread().threadId() +
                 "Socket: " + socket.getLocalPort());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -77,14 +88,20 @@ public class Client implements Runnable {
         JTextField input = new JTextField(20);
         JButton button = new JButton("Send");
 
+
         if(username == null) {
-            textArea.setText(Server.getServerWelcomeMessage() + "\nEnter a username.\n");
+            chatContent += getServerWelcomeMessage(serverName) + "\nEnter a username.\n";
+            textArea.setText(chatContent);
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     //Submit input field on submit button click if not empty
                     if(!input.getText().isEmpty()) {
-                        submitHandler(input, textArea, frame);
+                        try {
+                            submitHandler(input, textArea, frame);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 }
             });
@@ -97,7 +114,11 @@ public class Client implements Runnable {
                 public void keyPressed(KeyEvent e) {
                     //Submit input field on enter key if not empty
                     if(e.getKeyCode() == 10 && !input.getText().isEmpty()) {
-                        submitHandler(input, textArea, frame);
+                        try {
+                            submitHandler(input, textArea, frame);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 }
 
@@ -112,7 +133,11 @@ public class Client implements Runnable {
             @Override
             public void windowClosing(WindowEvent e)
             {
-                doClose(frame);
+                try {
+                    doClose(frame);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
 
@@ -148,7 +173,7 @@ public class Client implements Runnable {
 
 
 
-    private void submitHandler(JTextField input, JTextArea textArea, JFrame frame){
+    private void submitHandler(JTextField input, JTextArea textArea, JFrame frame) throws IOException {
         String userResponse = input.getText();
         if(username == null) {
             boolean usernameTaken = false;
@@ -162,7 +187,7 @@ public class Client implements Runnable {
             }
             if(!usernameTaken) {
                 username = userResponse;
-                chatContent = "You have chosen the username: " + username + "\n";
+                chatContent += "\n[SERVER] You have chosen the username: " + username + "\n";
                 textArea.setText(chatContent);
                 pr.println(username);
                 pr.flush();
@@ -171,6 +196,7 @@ public class Client implements Runnable {
             if(userResponse != null ) {
                 if(userResponse.equals("/quit")) {
                     doClose(frame);
+                    return;
                 } else {
                     chatContent += "You: " + userResponse + "\n";
                     textArea.setText(chatContent);
@@ -182,10 +208,18 @@ public class Client implements Runnable {
         input.setText("");
     }
 
-    private void doClose(JFrame frame) {
+    private void doClose(JFrame frame) throws IOException {
         frame.dispose();
         pr.println("/quit");
         pr.flush();
+        socket.close();
+    }
+
+
+    public static String getServerWelcomeMessage(String serverName) {
+        return "-------- -------- -------- -------- -------- --------\n"
+                + "Welcome to the " + serverName + " Server!\n"
+                + "-------- -------- -------- -------- -------- --------";
     }
 
 
