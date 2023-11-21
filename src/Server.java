@@ -63,26 +63,16 @@ public class Server implements Runnable {
     public static void openServerNameCrical() {
         serverNameCriticalOpen = true;
     }
+    public static void closeServerNameCrical() {
+        serverNameCriticalOpen = false;
+    }
     public static void setServerName(String newName) {
         if( serverNameCriticalOpen == false) {
             serverName = newName.substring(0, 30);
-            serverNameCriticalOpen = false;
+            closeServerNameCrical();
         }
     }
 
-    public static String getServerWelcomeMessage(boolean displayNumConnected) {
-        Date date = new Date();
-        if( !displayNumConnected ) {
-            return "-------- -------- -------- -------- -------- --------\n"
-                    + "Welcome to the " + serverName + " Server!\n"
-                    + "-------- -------- -------- -------- -------- --------";
-        }
-        return "-------- -------- -------- -------- -------- --------\n"
-                + "Welcome to the " + serverName + " Server!\n" +
-                + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() +  " - "
-                + socketList.size() + " clients are connected.\n"
-                + "-------- -------- -------- -------- -------- --------";
-    }
     public static String getServerWelcomeMessage() {
         Date date = new Date();
         return "-------- -------- -------- -------- -------- --------\n"

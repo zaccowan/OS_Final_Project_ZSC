@@ -54,8 +54,7 @@ public class Client implements Runnable {
         //
         //Setup for main frame
         JFrame frame = new JFrame("Welcome to " + serverName +
-//                " ! Thread: " + Thread.currentThread().threadId() +
-                "Socket: " + socket.getLocalPort());
+                " - Socket: " + socket.getLocalPort());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         try
         {
@@ -158,7 +157,13 @@ public class Client implements Runnable {
         while(true) {
             try {
                 String messageRecieved = br.readLine();
-                if(!messageRecieved.equals("null")) {
+                if(messageRecieved.startsWith("/servername")) {
+                    String newServername = messageRecieved.substring(12, messageRecieved.length());
+                    serverName = newServername;
+                    frame.setTitle("Welcome to " + serverName +
+                            " - Socket: " + socket.getLocalPort());
+                }
+                else if(!messageRecieved.equals("null")) {
                     chatContent += messageRecieved + "\n";
                     textArea.setText(chatContent);
                 }

@@ -66,14 +66,17 @@ public class ClientMessageHandler implements Runnable{
                                 "Type \"/forget\" at any time to cancel server edit request.");
                         clientWriter.flush();
                     }
-                    if( Server.isNextToEdit(socket) ) {
+                    else if( Server.isNextToEdit(socket) ) {
                         Server.removeFromEditServerQueue(socket);
+
                         Server.openServerNameCrical();
                         clientWriter.println("Enter message to change server name.");
                         clientWriter.flush();
                         String newServerName = br.readLine();
                         Server.setServerName(newServerName);
+                        sendServerCommand("/servername " + newServerName);
                         System.out.println("[SERVER] " + username + " has changed server name to " + newServerName);
+                        Server.closeServerNameCrical();
                     }
                 } else if (userMessage.startsWith("/forget") && userMessage.length() == 7) {
                     clientWriter.println("Ending server edit request.");
@@ -125,6 +128,15 @@ public class ClientMessageHandler implements Runnable{
                 recipientWriter.println("[SERVER] " + message);
                 recipientWriter.flush();
             }
+        }
+    }
+
+    public void sendServerCommand(String command) throws IOException {
+        for( Socket recipientSocket : Server.getSocketList() ) {
+            PrintWriter recipientWriter = new PrintWriter(recipientSocket.getOutputStream());
+            System.out.println(command);
+            recipientWriter.println(command);
+            recipientWriter.flush();
         }
     }
 
