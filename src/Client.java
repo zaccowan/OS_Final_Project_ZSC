@@ -5,7 +5,6 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -175,24 +174,32 @@ public class Client implements Runnable {
 
     private void submitHandler(JTextField input, JTextArea textArea, JFrame frame) throws IOException {
         String userResponse = input.getText();
-        if(username == null) {
+
+        if(username == null || (userResponse.startsWith("/username") && userResponse.length() >= 10) ) {
+            String usernameCandidate = userResponse;
+            if( username == null ) {
+                usernameCandidate = userResponse;
+            } else if(userResponse.startsWith("/username")) {
+                usernameCandidate = userResponse.substring(10, userResponse.length());
+            }
             boolean usernameTaken = false;
             for(ClientMessageHandler clientHandler : Server.getClientHandlerList()) {
-                if (userResponse.equals(clientHandler.getUsername())) {
-                    chatContent = "Username taken. Try a new one.";
+                if (usernameCandidate.equals(clientHandler.getUsername())) {
+                    chatContent += "\nUsername taken. Try a new one.\n";
                     textArea.setText(chatContent);
                     usernameTaken = true;
                     break;
                 }
             }
             if(!usernameTaken) {
-                username = userResponse;
+                username = usernameCandidate;
                 chatContent += "\n[SERVER] You have chosen the username: " + username + "\n";
                 textArea.setText(chatContent);
-                pr.println(username);
+                pr.println("/username " + username);
                 pr.flush();
             }
-        }else {
+        }
+        else {
             if(userResponse != null ) {
                 if(userResponse.equals("/quit")) {
                     doClose(frame);
