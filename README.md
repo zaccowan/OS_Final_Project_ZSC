@@ -12,9 +12,13 @@ The main focus of this project is using ***multiple threads of execution while s
 
 ## My Specific Application
 
-The application I am building is a server that allows users to chat, send and recieve files, and also to manage some server information (name, description, etc).
+The application I am building is a server that allows users to chat and edit the server name.
 <br>
-There is no database management going on since the focus of this project is managing read/write access of each client. This will be done using mutual exclusion or a form of semaphore. 
+There is no database management going on since the focus of this project is managing read/write access of each client. This is essential done with a binary semaphore that is set to true when the critical section is open.
+<br>
+I only chose one instance in which to protect the read / write access of a piece of data, this occurs in the instance of clients editing the server name information.
+<br>
+It would be important to only allow one user to edit this information at a time so that the change made is what we anticipate; we dont want a race case to occur.
 
 <br>
 <br>
@@ -25,13 +29,14 @@ There is no database management going on since the focus of this project is mana
 - Multiple clients can connect
 - Clients have a customizeable username connected to their unique socket
 - Clients can post messages to main server
+- "/" Client commands: change username, edit servername, ...
+- Client disconnect frame handling
 
 ### Server Features
 - Server displays number of actively connected clients upon a change (client connection/disconnection)
 - Server displays messages from clients with username
-
-###
-- Simple Graphical Interface for client on the server.
+- Server has client editable name
+- Client Disconnect Handling
 
 <br>
 <br>
@@ -39,14 +44,10 @@ There is no database management going on since the focus of this project is mana
 ## Known Problems / Things To Implement
 
 ### Client Side
-- "/" Client commands: change username, ...
 - Using "@{username or client id}" to send a message to a specific client
-- Client disconnect handling.
 - Ability to send files
 
 ### Server Side
-- Server does not yet handle termination of client connection
-- Ability to have server details: name, description, ...
 - Ability to kick users from server
 - Proper Server termination
 
