@@ -29,7 +29,7 @@ public class ClientMessageHandler implements Runnable{
                 String userMessage = br.readLine();
 
                 // Handles username setting.
-                // First message sent from client is automatically sent as a username edit request
+                // First message sent from client is automatically prepended with /username
                 if( userMessage.startsWith("/username")) {
                     // Sets initial username
                     if( username == null) {
@@ -41,6 +41,7 @@ public class ClientMessageHandler implements Runnable{
                         username = userMessage.substring(10, userMessage.length());
                     }
                 }
+                //
                 // Handle a user quit
                 else if( userMessage.equals("/quit")) {
                     if( username == null)
@@ -59,26 +60,13 @@ public class ClientMessageHandler implements Runnable{
                 else if( userMessage.startsWith("/server") && userMessage.length() == 7) {
                     System.out.println("[SERVER] " + username + " has requested to edit server name.");
                     Server.addToEditServerQueue(socket);
-
                     if( Server.isServerNameCriticalOpen() ) {
-                        // Wait until server name critical section is open.
                         clientWriter.println("You have been added to wait list to edit server name. You may continue to send messages. " +
                                 "Type \"/forget\" at any time to cancel server edit request.");
                         clientWriter.flush();
                     }
-                    else if( Server.isNextToEdit(socket) ) {
-                        Server.removeFromEditServerQueue(socket);
 
-                        Server.openServerNameCrical();
-                        clientWriter.println("Enter message to change server name.");
-                        clientWriter.flush();
-                        String newServerName = br.readLine();
-                        Server.setServerName(newServerName);
-                        sendServerCommand("/servername " + newServerName);
-                        System.out.println("[SERVER] " + username + " has changed server name to " + newServerName);
-                        Server.closeServerNameCrical();
-                    }
-                } else if (userMessage.startsWith("/forget") && userMessage.length() == 7) {
+                } else if (userMessage.startsWith("/forget") && userMessage.length() == 7 ) {
                     clientWriter.println("Ending server edit request.");
                     clientWriter.flush();
                     Server.removeFromEditServerQueue(socket);
@@ -88,6 +76,19 @@ public class ClientMessageHandler implements Runnable{
                 // Handles normal messages sent by client
                 else {
                     sendMessageToAll(getUsername(), userMessage);
+                }
+
+
+                if( Server.isNextToEdit(socket) && !Server.isServerNameCriticalOpen() ) {
+                    Server.removeFromEditServerQueue(socket);
+                    Server.openServerNameCrical();
+                    clientWriter.println("Enter message to change server name.");
+                    clientWriter.flush();
+                    String newServerName = br.readLine();
+                    Server.setServerName(newServerName);
+                    sendServerCommand("/servername " + newServerName);
+                    System.out.println("[SERVER] " + username + " has changed server name to " + newServerName);
+                    Server.closeServerNameCrical();
                 }
 
             } catch (IOException e) {

@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.awt.event.*;
@@ -24,8 +25,10 @@ public class Client implements Runnable {
     private InputStreamReader isr;
     private BufferedReader br;
 
-    //Client Chat Data
+    private boolean isEditingUsername = false;
+    //Chat Display Content
     private String chatContent = "";
+    private String serverContent = "";
 
     public Client() throws UnknownHostException, IOException {
         socket = new Socket("localhost", 8001);
@@ -69,8 +72,9 @@ public class Client implements Runnable {
 
         //
         //Setup for text area in center
-        JTextArea textArea = new JTextArea("",15, 50);
+        JTextArea textArea = new JTextArea("",20, 60);
         textArea.setWrapStyleWord(true);
+        textArea.setLineWrap(true);
         textArea.setEditable(false);
         textArea.setFont(Font.getFont(Font.SANS_SERIF));
 
@@ -83,13 +87,15 @@ public class Client implements Runnable {
         //Setup for bottom entry section
         JPanel inputpanel = new JPanel();
         inputpanel.setLayout(new FlowLayout());
-        JTextField input = new JTextField(20);
+        inputpanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JTextField input = new JTextField(40);
         JButton button = new JButton("Send");
 
 
         if(username == null) {
-            chatContent += getServerWelcomeMessage(serverName) + "\nEnter a username.\n";
-            textArea.setText(chatContent);
+            isEditingUsername = true;
+            serverContent += getServerWelcomeMessage(serverName) + "\nEnter a username.\n";
+            textArea.setText(serverContent);
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -144,6 +150,7 @@ public class Client implements Runnable {
         DefaultCaret caret = (DefaultCaret) textArea.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         panel.add(scroller);
+        panel.setAutoscrolls(true);
         inputpanel.add(input);
         inputpanel.add(button);
         panel.add(inputpanel);
@@ -151,7 +158,8 @@ public class Client implements Runnable {
         frame.pack();
         frame.setLocationByPlatform(true);
         frame.setVisible(true);
-        frame.setResizable(false);
+        frame.setResizable(true);
+        panel.updateUI();
 
         //Once frame is loaded, loop here and read from messages sent to socket
         while(true) {
@@ -164,8 +172,10 @@ public class Client implements Runnable {
                             " - Socket: " + socket.getLocalPort());
                 }
                 else if(!messageRecieved.equals("null")) {
-                    chatContent += messageRecieved + "\n";
-                    textArea.setText(chatContent);
+                    chatContent += messageRecieved + "\n\n";
+                    if( isEditingUsername == false ) {
+                        textArea.setText(chatContent);
+                    }
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -180,7 +190,10 @@ public class Client implements Runnable {
     private void submitHandler(JTextField input, JTextArea textArea, JFrame frame) throws IOException {
         String userResponse = input.getText();
 
+        // Username prompting system.
+        // Switches to rendering Server specific content but still stores chatContent
         if(username == null || (userResponse.startsWith("/username") && userResponse.length() >= 10) ) {
+            isEditingUsername = true;
             String usernameCandidate = userResponse;
             if( username == null ) {
                 usernameCandidate = userResponse;
@@ -190,27 +203,29 @@ public class Client implements Runnable {
             boolean usernameTaken = false;
             for(ClientMessageHandler clientHandler : Server.getClientHandlerList()) {
                 if (usernameCandidate.equals(clientHandler.getUsername())) {
-                    chatContent += "\nUsername taken. Try a new one.\n";
-                    textArea.setText(chatContent);
+                    serverContent += "\nUsername taken. Try a new one.\n";
+                    textArea.setText(serverContent);
                     usernameTaken = true;
                     break;
                 }
             }
             if(!usernameTaken) {
                 username = usernameCandidate;
-                chatContent += "\n[SERVER] You have chosen the username: " + username + "\n";
-                textArea.setText(chatContent);
+                serverContent += "\n[SERVER] You have chosen the username: " + username + "\n";
+                textArea.setText(serverContent);
                 pr.println("/username " + username);
                 pr.flush();
+                isEditingUsername = false;
             }
         }
+        // Handles Normal Message Sending
         else {
             if(userResponse != null ) {
                 if(userResponse.equals("/quit")) {
                     doClose(frame);
                     return;
                 } else {
-                    chatContent += "You: " + userResponse + "\n";
+                    chatContent += "You: " + userResponse + "\n\n";
                     textArea.setText(chatContent);
                     pr.println(userResponse);
                     pr.flush();
@@ -229,9 +244,7 @@ public class Client implements Runnable {
 
 
     public static String getServerWelcomeMessage(String serverName) {
-        return "-------- -------- -------- -------- -------- --------\n"
-                + "Welcome to the " + serverName + " Server!\n"
-                + "-------- -------- -------- -------- -------- --------";
+        return "\nWelcome to the " + serverName + " Server!\n";
     }
 
 
