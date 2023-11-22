@@ -81,14 +81,14 @@ public class ClientMessageHandler implements Runnable{
 
                 if( Server.isNextToEdit(socket) && !Server.isServerNameCriticalOpen() ) {
                     Server.removeFromEditServerQueue(socket);
-                    Server.openServerNameCrical();
+                    Server.openServerNameCritical();
                     clientWriter.println("Enter message to change server name.");
                     clientWriter.flush();
                     String newServerName = br.readLine();
                     Server.setServerName(newServerName);
                     sendServerCommand("/servername " + newServerName);
                     System.out.println("[SERVER] " + username + " has changed server name to " + newServerName);
-                    Server.closeServerNameCrical();
+                    Server.closeServerNameCritical();
                 }
 
             } catch (IOException e) {

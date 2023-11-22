@@ -11,9 +11,9 @@ public class Server implements Runnable {
 
     private static String serverName = "Computer Engineers";
     private static boolean serverNameCriticalOpen = false;
-    private static LinkedBlockingQueue<Socket> editServerQueue = new LinkedBlockingQueue<>();
-    private static final ArrayList<Socket> socketList = new ArrayList<Socket>();
-    private static final ArrayList<ClientMessageHandler> clientHandlerList = new ArrayList<ClientMessageHandler>();
+    private static final LinkedBlockingQueue<Socket> editServerQueue = new LinkedBlockingQueue<>();
+    private static final ArrayList<Socket> socketList = new ArrayList<>();
+    private static final ArrayList<ClientMessageHandler> clientHandlerList = new ArrayList<>();
     private final ExecutorService messageReceiverExecutor;
 
     public Server(int numClients) {
@@ -23,7 +23,7 @@ public class Server implements Runnable {
     @Override
     public void run() {
         System.out.println("[SERVER STARTED]");
-        ServerSocket server = null;
+        ServerSocket server;
         try {
             server = new ServerSocket(8001);
         } catch (IOException e) {
@@ -33,8 +33,6 @@ public class Server implements Runnable {
         while (true) {
             //Prints the state of the server and the respective time
             System.out.println(getServerWelcomeMessage());
-
-
             //Accepts Client request made in Client.java (and technically any other request by browsers, ...)
             Socket socket;
             try {
@@ -47,7 +45,6 @@ public class Server implements Runnable {
             }
             socketList.add(socket);
             System.out.println("Client #" + socket.getPort() + " has connected.");
-
         } //closes while
     }
 
@@ -60,23 +57,23 @@ public class Server implements Runnable {
     public static boolean isServerNameCriticalOpen() {
         return serverNameCriticalOpen;
     }
-    public static void openServerNameCrical() {
+    public static void openServerNameCritical() {
         serverNameCriticalOpen = true;
     }
-    public static void closeServerNameCrical() {
+    public static void closeServerNameCritical() {
         serverNameCriticalOpen = false;
     }
     public static void setServerName(String newName) {
-        if( serverNameCriticalOpen == false) {
+        if( !serverNameCriticalOpen) {
             serverName = newName.substring(0, 30);
-            closeServerNameCrical();
+            closeServerNameCritical();
         }
     }
 
     public static String getServerWelcomeMessage() {
         Date date = new Date();
         return "-------- -------- -------- -------- -------- --------\n"
-                + "Welcome to the " + serverName + " Server!\n" +
+                + "Welcome to the " + serverName + " Server!\n"
                 + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() +  " - "
                 + socketList.size() + " clients are connected.\n"
                 + "-------- -------- -------- -------- -------- --------";
@@ -96,13 +93,10 @@ public class Server implements Runnable {
     public static void removeFromEditServerQueue(Socket client) {
         editServerQueue.remove(client);
     }
-    public static boolean isEditServerQueueEmpty() {
-        return editServerQueue.isEmpty();
-    }
+
     public static boolean isNextToEdit(Socket socket) {
         if(editServerQueue.isEmpty()) return false;
-        if( editServerQueue.peek().equals(socket) ) return true;
-        return false;
+        return editServerQueue.peek().equals(socket);
     }
 
 }//closes Server
