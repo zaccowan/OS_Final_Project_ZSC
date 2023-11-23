@@ -16,8 +16,7 @@ public class ClientMessageHandler implements Runnable{
         InputStreamReader isr = new InputStreamReader(socket.getInputStream());
         br = new BufferedReader(isr);
         clientWriter = new PrintWriter(socket.getOutputStream());
-        clientWriter.println(Server.getServerName());
-        clientWriter.flush();
+        sendServerResponse(Server.getServerName());
     }
 
     @Override
@@ -40,6 +39,20 @@ public class ClientMessageHandler implements Runnable{
                                 userMessage.substring(10, userMessage.length()));
                         username = userMessage.substring(10, userMessage.length());
                     }
+                } else if (userMessage.startsWith("/checkUser")) {
+                    String usernameCandidate = userMessage.substring(11, userMessage.length());
+                    boolean usernameTaken = false;
+                    for(ClientMessageHandler clientHandler : Server.getClientHandlerList()) {
+                        if (usernameCandidate.equals(clientHandler.getUsername())) {
+                            usernameTaken = true;
+                            break;
+                        }
+                    }
+                    if( usernameTaken ) {
+                        sendServerResponse("/userIsTaken " + usernameCandidate);
+                    } else {
+                        sendServerResponse("/userIsUnique " + usernameCandidate);
+                    }
                 }
                 //
                 // Handle a user quit
@@ -61,16 +74,13 @@ public class ClientMessageHandler implements Runnable{
                     System.out.println("[SERVER] " + username + " has requested to edit server name.");
                     Server.addToEditServerQueue(socket);
                     if( Server.isServerNameCriticalOpen() ) {
-                        clientWriter.println("You have been added to wait list to edit server name. You may continue to send messages. " +
+                        sendServerResponse("You have been added to wait list to edit server name. You may continue to send messages. " +
                                 "Type \"/forget\" at any time to cancel server edit request.");
-                        clientWriter.flush();
                     }
 
                 } else if (userMessage.startsWith("/forget") && userMessage.length() == 7 ) {
-                    clientWriter.println("Ending server edit request.");
-                    clientWriter.flush();
+                    sendServerResponse("Ending server edit request.");
                     Server.removeFromEditServerQueue(socket);
-                    break;
                 }
                 //
                 // Handles normal messages sent by client
@@ -82,8 +92,7 @@ public class ClientMessageHandler implements Runnable{
                 if( Server.isNextToEdit(socket) && !Server.isServerNameCriticalOpen() ) {
                     Server.removeFromEditServerQueue(socket);
                     Server.openServerNameCritical();
-                    clientWriter.println("Enter message to change server name.");
-                    clientWriter.flush();
+                    sendServerResponse("Enter message to change server name.");
                     String newServerName = br.readLine();
                     Server.setServerName(newServerName);
                     sendServerCommand("/servername " + newServerName);
@@ -139,6 +148,11 @@ public class ClientMessageHandler implements Runnable{
             recipientWriter.println(command);
             recipientWriter.flush();
         }
+    }
+
+    public void sendServerResponse(String response) {
+        clientWriter.println(response);
+        clientWriter.flush();
     }
 
     public String getUsername() {

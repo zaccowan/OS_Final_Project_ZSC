@@ -164,15 +164,28 @@ public class Client implements Runnable {
         //Once frame is loaded, loop here and read from messages sent to socket
         while(true) {
             try {
-                String messageRecieved = br.readLine();
-                if(messageRecieved.startsWith("/servername")) {
-                    String newServername = messageRecieved.substring(12, messageRecieved.length());
+                String messageReceived = br.readLine();
+                if(messageReceived.startsWith("/servername")) {
+                    String newServername = messageReceived.substring(12, messageReceived.length());
                     serverName = newServername;
                     frame.setTitle("Welcome to " + serverName +
                             " - Socket: " + socket.getLocalPort());
                 }
-                else if(!messageRecieved.equals("null")) {
-                    chatContent += messageRecieved + "\n\n";
+                else if(messageReceived.startsWith("/userIsTaken")) {
+                    serverContent += "\nUsername taken. Try a new one.\n";
+                    textArea.setText(serverContent);
+                } else if( messageReceived.startsWith("/userIsUnique") ) {
+                    String usernameCandidate = messageReceived.substring(14, messageReceived.length());
+                    username = usernameCandidate;
+                    serverContent += "\n[SERVER] You have chosen the username: " + username + "\n";
+                    textArea.setText(serverContent);
+                    pr.println("/username " + username);
+                    pr.flush();
+                    isEditingUsername = false;
+                }
+                else if(!messageReceived.equals("null")) {
+                    System.out.println("hello");
+                    chatContent += messageReceived + "\n\n";
                     if( isEditingUsername == false ) {
                         textArea.setText(chatContent);
                     }
@@ -200,23 +213,8 @@ public class Client implements Runnable {
             } else if(userResponse.startsWith("/username")) {
                 usernameCandidate = userResponse.substring(10, userResponse.length());
             }
-            boolean usernameTaken = false;
-            for(ClientMessageHandler clientHandler : Server.getClientHandlerList()) {
-                if (usernameCandidate.equals(clientHandler.getUsername())) {
-                    serverContent += "\nUsername taken. Try a new one.\n";
-                    textArea.setText(serverContent);
-                    usernameTaken = true;
-                    break;
-                }
-            }
-            if(!usernameTaken) {
-                username = usernameCandidate;
-                serverContent += "\n[SERVER] You have chosen the username: " + username + "\n";
-                textArea.setText(serverContent);
-                pr.println("/username " + username);
-                pr.flush();
-                isEditingUsername = false;
-            }
+            pr.println("/checkUser " + usernameCandidate);
+            pr.flush();
         }
         // Handles Normal Message Sending
         else {
