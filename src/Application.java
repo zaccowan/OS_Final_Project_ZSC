@@ -3,7 +3,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Application {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         final int NUM_CLIENTS = 2;
         ExecutorService clientExecutor;

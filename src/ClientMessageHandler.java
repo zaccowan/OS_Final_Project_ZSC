@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Objects;
 
 public class ClientMessageHandler implements Runnable{
 
@@ -32,15 +33,15 @@ public class ClientMessageHandler implements Runnable{
                 if( userMessage.startsWith("/username")) {
                     // Sets initial username
                     if( username == null) {
-                        username = userMessage.substring(10, userMessage.length());
+                        username = userMessage.substring(10);
                         sendServerDialogToAll(username + " has connected to the server. Make sure to welcome them!");
                     } else {
                         sendServerDialogToAll(username + " has changed their username to: " +
-                                userMessage.substring(10, userMessage.length()));
-                        username = userMessage.substring(10, userMessage.length());
+                                userMessage.substring(10));
+                        username = userMessage.substring(10);
                     }
                 } else if (userMessage.startsWith("/checkUser")) {
-                    String usernameCandidate = userMessage.substring(11, userMessage.length());
+                    String usernameCandidate = userMessage.substring(11);
                     boolean usernameTaken = false;
                     for(ClientMessageHandler clientHandler : Server.getClientHandlerList()) {
                         if (usernameCandidate.equals(clientHandler.getUsername())) {
@@ -57,10 +58,7 @@ public class ClientMessageHandler implements Runnable{
                 //
                 // Handle a user quit
                 else if( userMessage.equals("/quit")) {
-                    if( username == null)
-                        sendDisconnectToAll("Client #" + String.valueOf(socket.getPort()));
-                    else
-                        sendDisconnectToAll(username);
+                    sendDisconnectToAll(Objects.requireNonNullElseGet(username, () -> "Client #" + socket.getPort()));
 
                     Server.getSocketList().remove(socket);
                     socket.close();
