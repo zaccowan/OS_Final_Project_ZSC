@@ -17,15 +17,24 @@ import java.util.Objects;
  */
 public class ClientMessageHandler implements Runnable{
 
-    //
-    // Principal Client identifying information.
+    /**
+     * Socket of principal client.
+     */
     private final Socket socket;
+    /**
+     * Username of principal client.
+     */
     private String username;
 
-    //
-    //Used for sending and receiving message through socket.
-    private final BufferedReader br; // Receives messages through socket input stream.
-    private final PrintWriter clientWriter; // Sends messages from server back to client delegated to thread.
+
+    /**
+     * Sends messages through principal client socket output stream.
+     */
+    private final PrintWriter clientWriter;
+    /**
+     * Receives messages through pricniapl client socket input stream.
+     */
+    private final BufferedReader br;
 
     /**
      * Instantiates a new Client message handler.

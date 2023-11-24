@@ -20,23 +20,44 @@ import java.util.concurrent.Executors;
  */
 public class Client implements Runnable {
 
-    //Client Identification
+    /**
+     * Client username.
+     */
     private String username = null;
+    /**
+     * Server Name of joined server.
+     */
     private String serverName = null;
+    /**
+     * Socket of client.
+     */
     private final Socket socket;
 
-    //Used for sending and receiving message through socket.
-    private final PrintWriter pr; // Sends messages through socket output stream.
-    private final BufferedReader br; // Receives messages through socket input stream.
 
-    // Flag for when username editing process is active.
-    // Used to determine which page content to render.
+    /**
+     * Sends messages through client socket output stream.
+     */
+    private final PrintWriter pr;
+    /**
+     * Receives messages through socket input stream.
+     */
+    private final BufferedReader br;
+
+    /**
+     * Flag for when username editing process is active.
+     * Used to determine which page content to render.
+     */
     private boolean isEditingUsername = false;
 
-    //
-    //Chat Display Content
-    private String chatContent = ""; // Stores chat data and some server notifications
-    private String serverContent = ""; // Stores server dialogs like username prompting
+
+    /**
+     * Stores chat data and some server notifications
+     */
+    private String chatContent = "";
+    /**
+     * Stores server dialogs like username prompting
+     */
+    private String serverContent = "";
 
     /**
      * Instantiates a new Client.

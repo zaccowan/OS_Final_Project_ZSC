@@ -16,24 +16,38 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class Server implements Runnable {
 
+    /**
+     * Server name.
+     */
     private static String serverName = "Computer Engineers";
 
-    // Flag to maintain mutual exclusion of server name.
-    // This is my implementation of a critical section for a thread shared resource.
+
+    /**
+     * Flag to maintain mutual exclusion of server name.
+     * This is my implementation of a critical section for a thread shared resource.
+     */
     private static boolean serverNameCriticalOpen = false;
 
-    // Queue used to store request to edit server name.
-    // If empty, a request is added but immediately serviced.
-    // If not empty, a request is serviced when a client is next up and critical section has been closed by the previous.
+    /**
+     * Queue used to store request to edit server name.
+     * If empty, a request is added but immediately serviced.
+     * If not empty, a request is serviced when a client is next up and critical section has been closed by the previous.
+     */
     private static final LinkedBlockingQueue<Socket> editServerQueue = new LinkedBlockingQueue<>();
 
-    // Stores socket once client request is accepted
+    /**
+     * Stores socket once client request is accepted
+     */
     private static final ArrayList<Socket> socketList = new ArrayList<>();
 
-    // Stores instances of a client message handler object
+    /**
+     * Stores instances of a client message handler object.
+     */
     private static final ArrayList<ClientMessageHandler> clientHandlerList = new ArrayList<>();
 
-    // Executor service used to delegate a new message handler and maintain a Fixed Thread Pool of specified capacity.
+    /**
+     * Executor service used to delegate a new message handler and maintain a Fixed Thread Pool of specified capacity.
+     */
     private final ExecutorService messageReceiverExecutor;
 
     /**

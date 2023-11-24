@@ -12,6 +12,12 @@ import java.util.concurrent.Executors;
 public class Application {
 
     /**
+     * Just to satisfy javadocs warning.
+     * Does nothing.
+     */
+    Application() {}
+
+    /**
      * The entry point of application.
      * @param args main args
      */
