@@ -27,9 +27,9 @@ It would be important to only allow one user to edit this information at a time 
 
 ### Client Features
 - Multiple clients can connect
-- Clients have a customizeable username connected to their unique socket
+- Clients have a customizable username connected to their unique socket
 - Clients can post messages to main server
-- "/" Client commands: change username, edit servername, ...
+- "/" Client commands: change username, edit server name, ...
 - Client disconnect frame handling
 
 ### Server Features
