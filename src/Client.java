@@ -156,7 +156,8 @@ public class Client implements Runnable {
         frame.setResizable(true);
         panel.updateUI();
 
-        //Once frame is loaded, loop here and read from messages sent to socket
+        //
+        // Message Handling for messages sent from Server or other Clients
         while(true) {
             try {
                 String messageReceived = br.readLine();
@@ -200,25 +201,30 @@ public class Client implements Runnable {
         if(username == null || (userResponse.startsWith("/username") && userResponse.length() >= 10) ) {
             isEditingUsername = true;
             String usernameCandidate = userResponse;
+            // Takes first entry by user upon entering server as username
             if( username == null ) {
                 usernameCandidate = userResponse;
-            } else if(userResponse.startsWith("/username")) {
+            }
+            // Parses /username command
+            else if(userResponse.startsWith("/username")) {
                 usernameCandidate = userResponse.substring(10);
             }
+
+            // Sends request to server to check if desired username is taken
             pr.println("/checkUser " + usernameCandidate);
             pr.flush();
         }
-        // Handles Normal Message Sending
+        // Handles User Quit
+        else if(userResponse.equals("/quit")) {
+            doClose(frame);
+            return;
+        }
+        // Normal Message Sending
         else {
-            if(userResponse.equals("/quit")) {
-                doClose(frame);
-                return;
-            } else {
-                chatContent += "You: " + userResponse + "\n\n";
-                textArea.setText(chatContent);
-                pr.println(userResponse);
-                pr.flush();
-            }
+            chatContent += "You: " + userResponse + "\n\n";
+            textArea.setText(chatContent);
+            pr.println(userResponse);
+            pr.flush();
         }
         input.setText("");
     }
@@ -227,6 +233,8 @@ public class Client implements Runnable {
         frame.dispose();
         pr.println("/quit");
         pr.flush();
+        pr.close();
+        br.close();
         socket.close();
     }
 
