@@ -52,7 +52,7 @@ public class ClientMessageHandler implements Runnable{
     /**
      * Execution loop for ClientMessageHandler where:
      *      client messages are received,
-     *      client commands are services,
+     *      client commands are serviced,
      *      and server sends dialogs and responses to requests.
      */
     @Override
@@ -103,7 +103,6 @@ public class ClientMessageHandler implements Runnable{
                     socket.close();
                     System.out.println("[SERVER] " + Server.getSocketList().size() + " remain in server." );
                     return;  // Returns out of while loop and effectively ends thread execution
-
                 }
                 //
                 // Handle a user request to edit server name.

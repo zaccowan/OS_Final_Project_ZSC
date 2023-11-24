@@ -33,7 +33,6 @@ public class Application {
             serverExecutor.execute(new Server(NUM_CLIENTS, "The Boys"));
             for( int i = 0 ; i < NUM_CLIENTS ; i++ ) {
                 clientExecutor.submit(new Client());
-
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

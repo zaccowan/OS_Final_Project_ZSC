@@ -150,7 +150,6 @@ public class Client implements Runnable {
             textArea.setText(serverContent);
         }
 
-
         //
         // Listen for Enter key press or Submit button click.
         // If text input is not empty, process that text and clear the field.
