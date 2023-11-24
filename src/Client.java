@@ -312,9 +312,6 @@ public class Client implements Runnable {
         frame.dispose();
         pr.println("/quit");
         pr.flush();
-        pr.close();
-        br.close();
-        socket.close();
     }
 
 
