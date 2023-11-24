@@ -8,9 +8,16 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Threaded Client class to:
+ * establish connection with server,
+ * manage and update Swing GUI,
+ * and service client requests.
+ *
+ * @author Zachary Cowan
+ * @version 11 /1/2023 Fall/2023
+ */
 public class Client implements Runnable {
-    //Stores all the clients that have been created.
-    //public static ArrayList<Client> clientList = new ArrayList<Client>();
 
     //Client Identification
     private String username = null;
@@ -18,15 +25,26 @@ public class Client implements Runnable {
     private final Socket socket;
 
     //Used for sending message through socket.
-    private final PrintWriter pr;
+    private final PrintWriter pr; // Sends messages through socket output stream.
+    private final BufferedReader br; // Receives messages through socket input stream.
 
-    private final BufferedReader br;
-
+    // Flag for when username editing process is active.
+    // Used to determine which page content to render.
     private boolean isEditingUsername = false;
-    //Chat Display Content
-    private String chatContent = "";
-    private String serverContent = "";
 
+    //
+    //Chat Display Content
+    private String chatContent = ""; // Stores chat data and some server notifications
+    private String serverContent = ""; // Stores server dialogs like username prompting
+
+    /**
+     * Instantiates a new Client.
+     * Connects to server and stores socket object.
+     * Instantiates PrintWriter to write to socket output stream.
+     * Instantiates Buffered Reader to read socket input stream.
+     *
+     * @throws IOException IOException might be thrown if socket encounters and IO error.
+     */
     public Client() throws IOException {
         socket = new Socket("localhost", 8001);
         pr = new PrintWriter(socket.getOutputStream());
@@ -35,21 +53,33 @@ public class Client implements Runnable {
         br = new BufferedReader(isr);
     }
 
+    /**
+     * Client main method.
+     * Instantiates a new client object and executes its run method.
+     * Client Object is designed to be distributable.
+     *
+     * @param args main args
+     * @throws IOException IOException might be thrown if socket encounters and IO error.
+     */
     public static void main(String [] args) throws IOException {
         ExecutorService clientExecutor = Executors.newSingleThreadExecutor();
         clientExecutor.execute(new Client());
     }
 
+    /**
+     * Execution loop for thread where:
+     *      GUI is created and managed, and
+     *      messages are processed and sent.
+     */
     @Override
     public void run()
     {
 
-        while(serverName == null) {
-            try {
-                serverName = br.readLine();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        // Receive Initial Server Name from Server.
+        try {
+            serverName = br.readLine();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         //
@@ -76,6 +106,7 @@ public class Client implements Runnable {
         textArea.setEditable(false);
         textArea.setFont(Font.getFont(Font.SANS_SERIF));
 
+        //
         //Enables scrolling for chat display
         JScrollPane scroller = new JScrollPane(textArea);
         scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -89,44 +120,52 @@ public class Client implements Runnable {
         JTextField input = new JTextField(40);
         JButton button = new JButton("Send");
 
-
+        //
+        // Occurs on initial run
         if(username == null) {
             isEditingUsername = true;
             serverContent += getServerWelcomeMessage(serverName) + "\nEnter a username.\n";
             textArea.setText(serverContent);
-            button.addActionListener(e -> {
-                //Submit input field on submit button click if not empty
-                if(!input.getText().isEmpty()) {
+        }
+
+
+        //
+        // Listen for Enter key press or Submit button click.
+        // If text input is not empty, process that text and clear the field.
+        button.addActionListener(e -> {
+            //Submit input field on submit button click if not empty
+            if(!input.getText().isEmpty()) {
+                try {
+                    submitHandler(input, textArea, frame);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+        input.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                //Submit input field on enter key if not empty
+                if(e.getKeyCode() == 10 && !input.getText().isEmpty()) {
                     try {
                         submitHandler(input, textArea, frame);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
                 }
-            });
-            input.addKeyListener(new KeyListener() {
-                @Override
-                public void keyTyped(KeyEvent e) {
-                }
+            }
 
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    //Submit input field on enter key if not empty
-                    if(e.getKeyCode() == 10 && !input.getText().isEmpty()) {
-                        try {
-                            submitHandler(input, textArea, frame);
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                }
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+        });
 
-                @Override
-                public void keyReleased(KeyEvent e) {
-                }
-            });
-        }
-
+        //
+        // Listens for frame close and handles correspondingly.
         frame.addWindowListener(new WindowAdapter()
         {
             @Override
@@ -157,15 +196,18 @@ public class Client implements Runnable {
         panel.updateUI();
 
         //
-        // Message Handling for messages sent from Server or other Clients
-        while(true) {
+        // Message handling for messages sent from Server
+        while(socket.isConnected()) {
             try {
                 String messageReceived = br.readLine();
+
+                // Process new servername and update GUI.
                 if(messageReceived.startsWith("/servername")) {
                     serverName = messageReceived.substring(12);
                     frame.setTitle("Welcome to " + serverName +
                             " - Socket: " + socket.getLocalPort());
                 }
+                //
                 else if(messageReceived.startsWith("/userIsTaken")) {
                     serverContent += "\nUsername taken. Try a new one.\n";
                     textArea.setText(serverContent);
@@ -177,7 +219,9 @@ public class Client implements Runnable {
                     pr.flush();
                     isEditingUsername = false;
                 }
-                else if(!messageReceived.equals("null")) {
+
+                // Process User Messages
+                else {
                     chatContent += messageReceived + "\n\n";
                     if(!isEditingUsername) {
                         textArea.setText(chatContent);
@@ -192,7 +236,15 @@ public class Client implements Runnable {
     }//closes run()
 
 
-
+    /**
+     * Handles cases when user submits a message via Enter key or Submit button.
+     * Preprocessing for username creation / editing process.
+     * Handles user quit request.
+     * @param input Input where user types messages.
+     * @param textArea Area where messages are rendered.
+     * @param frame Main JFrame passed for frame termination.
+     * @throws IOException IOException might be thrown if socket encounters and IO error.
+     */
     private void submitHandler(JTextField input, JTextArea textArea, JFrame frame) throws IOException {
         String userResponse = input.getText();
 
@@ -229,6 +281,11 @@ public class Client implements Runnable {
         input.setText("");
     }
 
+    /**
+     * Method to terminate all resources when client decides to quit or frame is closed.
+     * @param frame JFrame to be terminated
+     * @throws IOException IOException might be thrown if socket encounters and IO error.
+     */
     private void doClose(JFrame frame) throws IOException {
         frame.dispose();
         pr.println("/quit");
@@ -239,6 +296,12 @@ public class Client implements Runnable {
     }
 
 
+    /**
+     * Gets server welcome message.
+     *
+     * @param serverName the server name
+     * @return the server welcome message
+     */
     public static String getServerWelcomeMessage(String serverName) {
         return "\nWelcome to the " + serverName + " Server!\n";
     }

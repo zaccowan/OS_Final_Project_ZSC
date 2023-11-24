@@ -7,6 +7,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * The type Server.
+ */
 public class Server implements Runnable {
 
     private static String serverName = "Computer Engineers";
@@ -16,6 +19,11 @@ public class Server implements Runnable {
     private static final ArrayList<ClientMessageHandler> clientHandlerList = new ArrayList<>();
     private final ExecutorService messageReceiverExecutor;
 
+    /**
+     * Instantiates a new Server.
+     *
+     * @param numClients the num clients
+     */
     public Server(int numClients) {
         messageReceiverExecutor = Executors.newFixedThreadPool(numClients);
     }
@@ -48,21 +56,45 @@ public class Server implements Runnable {
         } //closes while
     }
 
+    /**
+     * Gets server name.
+     *
+     * @return the server name
+     */
     public static String getServerName() {
         return serverName;
     }
 
-    // Returns true if server name critical section was closed and successfully written to
+    /**
+     * Is server name critical open boolean.
+     *
+     * @return the boolean
+     */
+// Returns true if server name critical section was closed and successfully written to
     // Returns false if server name critical section was open and unable to be written to
     public static boolean isServerNameCriticalOpen() {
         return serverNameCriticalOpen;
     }
+
+    /**
+     * Open server name critical.
+     */
     public static void openServerNameCritical() {
         serverNameCriticalOpen = true;
     }
+
+    /**
+     * Close server name critical.
+     */
     public static void closeServerNameCritical() {
         serverNameCriticalOpen = false;
     }
+
+    /**
+     * Sets server name.
+     *
+     * @param newName the new name
+     */
     public static void setServerName(String newName) {
         if( !serverNameCriticalOpen) {
             serverName = newName.substring(0, 30);
@@ -70,6 +102,11 @@ public class Server implements Runnable {
         }
     }
 
+    /**
+     * Gets server welcome message.
+     *
+     * @return the server welcome message
+     */
     public static String getServerWelcomeMessage() {
         Date date = new Date();
         return "-------- -------- -------- -------- -------- --------\n"
@@ -79,21 +116,49 @@ public class Server implements Runnable {
                 + "-------- -------- -------- -------- -------- --------";
     }
 
+    /**
+     * Gets socket list.
+     *
+     * @return the socket list
+     */
     public static ArrayList<Socket> getSocketList() {
         return socketList;
     }
+
+    /**
+     * Gets client handler list.
+     *
+     * @return the client handler list
+     */
     public static ArrayList<ClientMessageHandler> getClientHandlerList() {
         return clientHandlerList;
     }
 
 
+    /**
+     * Add to edit server queue.
+     *
+     * @param client the client
+     */
     public static void addToEditServerQueue(Socket client) {
         editServerQueue.add(client);
     }
+
+    /**
+     * Remove from edit server queue.
+     *
+     * @param client the client
+     */
     public static void removeFromEditServerQueue(Socket client) {
         editServerQueue.remove(client);
     }
 
+    /**
+     * Is next to edit boolean.
+     *
+     * @param socket the socket
+     * @return the boolean
+     */
     public static boolean isNextToEdit(Socket socket) {
         if(editServerQueue.isEmpty()) return false;
         return editServerQueue.peek().equals(socket);

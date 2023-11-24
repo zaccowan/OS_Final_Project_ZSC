@@ -30,7 +30,7 @@ public class ClientMessageHandler implements Runnable{
 
                 // Handles username setting.
                 // First message sent from client is automatically prepended with /username
-                if( userMessage.startsWith("/username")) {
+                if( userMessage.startsWith("/username") && userMessage.length() >= 10) {
                     // Sets initial username
                     if( username == null) {
                         username = userMessage.substring(10);
