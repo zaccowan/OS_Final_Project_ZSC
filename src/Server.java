@@ -8,26 +8,48 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * The type Server.
+ * Threaded server class that stores server details and client information.
+ * Server is responsible for dispatching threads to manage clients messages.
+ *
+ * @author Zachary Cowan
+ * @version 11 /1/2023 Fall/2023
  */
 public class Server implements Runnable {
 
     private static String serverName = "Computer Engineers";
+
+    // Flag to maintain mutual exclusion of server name.
+    // This is my implementation of a critical section for a thread shared resource.
     private static boolean serverNameCriticalOpen = false;
+
+    // Queue used to store request to edit server name.
+    // If empty, a request is added but immediately serviced.
+    // If not empty, a request is serviced when a client is next up and critical section has been closed by the previous.
     private static final LinkedBlockingQueue<Socket> editServerQueue = new LinkedBlockingQueue<>();
+
+    // Stores socket once client request is accepted
     private static final ArrayList<Socket> socketList = new ArrayList<>();
+
+    // Stores instances of a client message handler object
     private static final ArrayList<ClientMessageHandler> clientHandlerList = new ArrayList<>();
+
+    // Executor service used to delegate a new message handler and maintain a Fixed Thread Pool of specified capacity.
     private final ExecutorService messageReceiverExecutor;
 
     /**
-     * Instantiates a new Server.
-     *
-     * @param numClients the num clients
+     * Instantiates a new Server
+     * @param numClients Max Number of clients to allow.
      */
     public Server(int numClients) {
         messageReceiverExecutor = Executors.newFixedThreadPool(numClients);
     }
 
+    /**
+     * Execution loop for Server where:
+     *      clients connection request are accepted,
+     *      a message handler is delegated for a connected client,
+     *      and the socket list is managed.
+     */
     @Override
     public void run() {
         System.out.println("[SERVER STARTED]");
@@ -58,33 +80,30 @@ public class Server implements Runnable {
 
     /**
      * Gets server name.
-     *
-     * @return the server name
+     * As part of design, server name is only read if server critical is closed.
+     * @return The current server name.
      */
     public static String getServerName() {
         return serverName;
     }
 
     /**
-     * Is server name critical open boolean.
-     *
-     * @return the boolean
+     * Get the state of the server name critical section
+     * @return Returns true Server Name critical section is open. False otherwise.
      */
-// Returns true if server name critical section was closed and successfully written to
-    // Returns false if server name critical section was open and unable to be written to
     public static boolean isServerNameCriticalOpen() {
         return serverNameCriticalOpen;
     }
 
     /**
-     * Open server name critical.
+     * Open server name critical section for editing.
      */
     public static void openServerNameCritical() {
         serverNameCriticalOpen = true;
     }
 
     /**
-     * Close server name critical.
+     * Close server name critical section when editing complete.
      */
     public static void closeServerNameCritical() {
         serverNameCriticalOpen = false;
@@ -92,8 +111,7 @@ public class Server implements Runnable {
 
     /**
      * Sets server name.
-     *
-     * @param newName the new name
+     * @param newName The new server name.
      */
     public static void setServerName(String newName) {
         if( !serverNameCriticalOpen) {
@@ -104,7 +122,6 @@ public class Server implements Runnable {
 
     /**
      * Gets server welcome message.
-     *
      * @return the server welcome message
      */
     public static String getServerWelcomeMessage() {
@@ -118,8 +135,7 @@ public class Server implements Runnable {
 
     /**
      * Gets socket list.
-     *
-     * @return the socket list
+     * @return The current socket list.
      */
     public static ArrayList<Socket> getSocketList() {
         return socketList;
@@ -127,8 +143,7 @@ public class Server implements Runnable {
 
     /**
      * Gets client handler list.
-     *
-     * @return the client handler list
+     * @return The current client handler list.
      */
     public static ArrayList<ClientMessageHandler> getClientHandlerList() {
         return clientHandlerList;
@@ -136,28 +151,26 @@ public class Server implements Runnable {
 
 
     /**
-     * Add to edit server queue.
-     *
-     * @param client the client
+     * Add to client to edit server request queue.
+     * @param client Edit requesting client socket.
      */
     public static void addToEditServerQueue(Socket client) {
         editServerQueue.add(client);
     }
 
     /**
-     * Remove from edit server queue.
-     *
-     * @param client the client
+     * Remove client from edit server request queue.
+     * @param client The client socket requesting to end request.
      */
     public static void removeFromEditServerQueue(Socket client) {
         editServerQueue.remove(client);
     }
 
     /**
-     * Is next to edit boolean.
+     * Determine if a socket is next in the edit request queue.
      *
-     * @param socket the socket
-     * @return the boolean
+     * @param socket The client socket to check.
+     * @return true if client socket is next up in queue. false, otherwise.
      */
     public static boolean isNextToEdit(Socket socket) {
         if(editServerQueue.isEmpty()) return false;

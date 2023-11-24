@@ -5,13 +5,33 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Objects;
 
+/**
+ * Threaded client message handler to:
+ *      receive messages from a client socket,
+ *      handle client commands,
+ *      and edit Server name with respect to critical section.
+ * A client message handler is delegated to a specific client, the principal client.
+ * @author Zachary Cowan
+ * @version 11 /1/2023
+ * Fall/2023
+ */
 public class ClientMessageHandler implements Runnable{
 
-    private final BufferedReader br;
+    //
+    // Principal Client identifying information.
     private final Socket socket;
     private String username;
-    private final PrintWriter clientWriter;
 
+    //
+    //Used for sending and receiving message through socket.
+    private final BufferedReader br; // Receives messages through socket input stream.
+    private final PrintWriter clientWriter; // Sends messages from server back to client delegated to thread.
+
+    /**
+     * Instantiates a new Client message handler.
+     * @param socket The socket of the client.
+     * @throws IOException IOException might be thrown if socket encounters and IO error.
+     */
     public ClientMessageHandler(Socket socket) throws IOException {
         this.socket = socket;
         InputStreamReader isr = new InputStreamReader(socket.getInputStream());
@@ -20,6 +40,12 @@ public class ClientMessageHandler implements Runnable{
         sendServerResponse(Server.getServerName());
     }
 
+    /**
+     * Execution loop for ClientMessageHandler where:
+     *      client messages are received,
+     *      client commands are services,
+     *      and server sends dialogs and responses to requests.
+     */
     @Override
     public void run() {
 
@@ -40,7 +66,10 @@ public class ClientMessageHandler implements Runnable{
                                 userMessage.substring(10));
                         username = userMessage.substring(10);
                     }
-                } else if (userMessage.startsWith("/checkUser")) {
+                }
+                //
+                // Handle a request to check if a username is actively taken on server.
+                else if (userMessage.startsWith("/checkUser")) {
                     String usernameCandidate = userMessage.substring(11);
                     boolean usernameTaken = false;
                     for(ClientMessageHandler clientHandler : Server.getClientHandlerList()) {
@@ -55,8 +84,9 @@ public class ClientMessageHandler implements Runnable{
                         sendServerResponse("/userIsUnique " + usernameCandidate);
                     }
                 }
+
                 //
-                // Handle a user quit
+                // Handle a user quit.
                 else if( userMessage.equals("/quit")) {
                     sendDisconnectToAll(Objects.requireNonNullElseGet(username, () -> "Client #" + socket.getPort()));
 
@@ -67,7 +97,8 @@ public class ClientMessageHandler implements Runnable{
 
                 }
                 //
-                // handle user edit server request
+                // Handle a user request to edit server name.
+                // Adds clients to server edit request queue.
                 else if( userMessage.startsWith("/server") && userMessage.length() == 7) {
                     System.out.println("[SERVER] " + username + " has requested to edit server name.");
                     Server.addToEditServerQueue(socket);
@@ -76,7 +107,11 @@ public class ClientMessageHandler implements Runnable{
                                 "Type \"/forget\" at any time to cancel server edit request.");
                     }
 
-                } else if (userMessage.startsWith("/forget") && userMessage.length() == 7 ) {
+                }
+                //
+                // Handle request to forget server name edit request.
+                // Removes client from server name edit request queue.
+                else if (userMessage.startsWith("/forget") && userMessage.length() == 7 ) {
                     sendServerResponse("Ending server edit request.");
                     Server.removeFromEditServerQueue(socket);
                 }
@@ -86,7 +121,9 @@ public class ClientMessageHandler implements Runnable{
                     sendMessageToAll(getUsername(), userMessage);
                 }
 
-
+                //
+                // Logic to service edit request.
+                // Maintains server name critical section.
                 if( Server.isNextToEdit(socket) && !Server.isServerNameCriticalOpen() ) {
                     Server.removeFromEditServerQueue(socket);
                     Server.openServerNameCritical();
@@ -105,6 +142,11 @@ public class ClientMessageHandler implements Runnable{
     }//closes run()
 
 
+    /**
+     * Send a user disconnect notification to all.
+     * @param username Username of disconnecting principal client.
+     * @throws IOException IOException might be thrown if socket encounters and IO error.
+     */
     public void sendDisconnectToAll(String username) throws IOException {
         System.out.println("[SERVER] " + username + " has disconnected.");
         for( Socket recipientSocket : Server.getSocketList() ) {
@@ -116,6 +158,12 @@ public class ClientMessageHandler implements Runnable{
         }
     }
 
+    /**
+     * Send message to all (except principal client).
+     * @param username Username of sending client.
+     * @param message  Message of sending client.
+     * @throws IOException IOException might be thrown if socket encounters and IO error.
+     */
     public void sendMessageToAll(String username, String message) throws IOException {
         for( Socket recipientSocket : Server.getSocketList() ) {
             if( !this.socket.equals(recipientSocket) ) {
@@ -128,6 +176,12 @@ public class ClientMessageHandler implements Runnable{
         }
     }
 
+    /**
+     * Send formatted server dialog to all.
+     * Used to let server communicate with clients.
+     * @param message Server message.
+     * @throws IOException IOException might be thrown if socket encounters and IO error.
+     */
     public void sendServerDialogToAll(String message) throws IOException {
         for( Socket recipientSocket : Server.getSocketList() ) {
             if( !this.socket.equals(recipientSocket) ) {
@@ -139,6 +193,12 @@ public class ClientMessageHandler implements Runnable{
         }
     }
 
+    /**
+     * Send server command.
+     * Used to send work commands to clients such as changing server name.
+     * @param command Command to send to clients.
+     * @throws IOException IOException might be thrown if socket encounters and IO error.
+     */
     public void sendServerCommand(String command) throws IOException {
         for( Socket recipientSocket : Server.getSocketList() ) {
             PrintWriter recipientWriter = new PrintWriter(recipientSocket.getOutputStream());
@@ -148,11 +208,19 @@ public class ClientMessageHandler implements Runnable{
         }
     }
 
+    /**
+     * Send server response to a principal client after request is serviced.
+     * @param response Response of serviced request.
+     */
     public void sendServerResponse(String response) {
         clientWriter.println(response);
         clientWriter.flush();
     }
 
+    /**
+     * Gets username of principal client
+     * @return Username of client.
+     */
     public String getUsername() {
         return this.username;
     }

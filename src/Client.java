@@ -15,7 +15,8 @@ import java.util.concurrent.Executors;
  * and service client requests.
  *
  * @author Zachary Cowan
- * @version 11 /1/2023 Fall/2023
+ * @version 11 /1/2023
+ * Fall/2023
  */
 public class Client implements Runnable {
 
@@ -24,7 +25,7 @@ public class Client implements Runnable {
     private String serverName = null;
     private final Socket socket;
 
-    //Used for sending message through socket.
+    //Used for sending and receiving message through socket.
     private final PrintWriter pr; // Sends messages through socket output stream.
     private final BufferedReader br; // Receives messages through socket input stream.
 

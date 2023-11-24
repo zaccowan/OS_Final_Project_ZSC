@@ -3,13 +3,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * The type Application.
+ * Application to spin up server and specified number of client objects.
+ * Note: each client object is a single thread with a swing GUI, opening too many may crash your system.
+ * @author Zachary Cowan
+ * @version 11 /1/2023
+ * Fall/2023
  */
 public class Application {
+
     /**
      * The entry point of application.
-     *
-     * @param args the input arguments
+     * @param args main args
      */
     public static void main(String[] args) {
 
