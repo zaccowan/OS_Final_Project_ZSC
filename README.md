@@ -1,9 +1,9 @@
 # OS_Final_Project_ZSC
 
-**Work in progress final project for Operating Systems class at Bellarmine University.**
+**Final project for Operating Systems class at Bellarmine University. Multithreaded chat server with Java Swing GUI, Java sockets, and shared resource mutual exclusion.**
 <br>
+Watch my [Kaltura Video](https://video.bellarmine.edu/media/Operating+Systems+Fall+2023+Project/1_9nxtz0pc) to see Application Running and Code Review!
 
-The project seeks to use an Http Server to model some important dynamics of system regulation. 
 <br>
 The main focus of this project is using ***multiple threads of execution while simultaneously maintaining a critical section.***
 
@@ -37,19 +37,6 @@ It would be important to only allow one user to edit this information at a time 
 - Server displays messages from clients with username
 - Server has client editable name
 - Client Disconnect Handling
-
-<br>
-<br>
-
-## Known Problems / Things To Implement
-
-### Client Side
-- Using "@{username or client id}" to send a message to a specific client
-- Ability to send files
-
-### Server Side
-- Ability to kick users from server
-- Proper Server termination
 
 <br>
 <br>
