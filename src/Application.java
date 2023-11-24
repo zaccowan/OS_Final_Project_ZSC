@@ -30,7 +30,7 @@ public class Application {
         clientExecutor = Executors.newFixedThreadPool(NUM_CLIENTS);
         try {
             serverExecutor = Executors.newSingleThreadExecutor();
-            serverExecutor.execute(new Server(NUM_CLIENTS));
+            serverExecutor.execute(new Server(NUM_CLIENTS, "The Boys"));
             for( int i = 0 ; i < NUM_CLIENTS ; i++ ) {
                 clientExecutor.submit(new Client());
 
