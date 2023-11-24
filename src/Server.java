@@ -53,7 +53,7 @@ public class Server implements Runnable {
     /**
      * Instantiates a new Server with option to change default server name.
      * @param numClients Max Number of clients to allow.
-     * @param serverName Name of server.
+     * @param name Name of server.
      */
     public Server(int numClients, String name) {
         messageReceiverExecutor = Executors.newFixedThreadPool(numClients);
