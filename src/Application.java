@@ -4,6 +4,7 @@ import java.util.concurrent.Executors;
 
 /**
  * Application to spin up server and specified number of client objects.
+ * Client and Server can be run individually but for ease of testing this Application spins up one server and many clients to connect.
  * Note: each client object is a single thread with a swing GUI, opening too many may crash your system.
  * @author Zachary Cowan
  * @version 11 /1/2023

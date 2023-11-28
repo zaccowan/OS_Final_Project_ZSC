@@ -27,7 +27,7 @@ public class Server implements Runnable {
      * Flag to maintain mutual exclusion of server name.
      * This is my implementation of a critical section for a thread shared resource.
      */
-    private static AtomicBoolean serverNameCriticalOpen = new AtomicBoolean();
+    private static final AtomicBoolean serverNameCriticalOpen = new AtomicBoolean();
 
     /**
      * Queue used to store request to edit server name.
@@ -51,6 +51,15 @@ public class Server implements Runnable {
      */
     private final ExecutorService messageReceiverExecutor;
 
+
+
+    /**
+     * Server main method.
+     * Instantiates a new Server object and executes its run method.
+     * Server Object is designed to be distributable.
+     *
+     * @param args main args
+     */
     public static void main(String[] args) {
         ExecutorService serverExecutor = serverExecutor = Executors.newSingleThreadExecutor();
         serverExecutor.execute(new Server(5, "The Boys"));
