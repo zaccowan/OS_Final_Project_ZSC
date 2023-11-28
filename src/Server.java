@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Threaded server class that stores server details and client information.
@@ -26,7 +27,7 @@ public class Server implements Runnable {
      * Flag to maintain mutual exclusion of server name.
      * This is my implementation of a critical section for a thread shared resource.
      */
-    private static boolean serverNameCriticalOpen = false;
+    private static AtomicBoolean serverNameCriticalOpen = new AtomicBoolean();
 
     /**
      * Queue used to store request to edit server name.
@@ -120,21 +121,21 @@ public class Server implements Runnable {
      * @return Returns true Server Name critical section is open. False otherwise.
      */
     public static boolean isServerNameCriticalOpen() {
-        return serverNameCriticalOpen;
+        return serverNameCriticalOpen.get();
     }
 
     /**
      * Open server name critical section for editing.
      */
     public static void openServerNameCritical() {
-        serverNameCriticalOpen = true;
+        serverNameCriticalOpen.set(true);
     }
 
     /**
      * Close server name critical section when editing complete.
      */
     public static void closeServerNameCritical() {
-        serverNameCriticalOpen = false;
+        serverNameCriticalOpen.set(false);
     }
 
     /**
@@ -142,7 +143,7 @@ public class Server implements Runnable {
      * @param newName The new server name.
      */
     public static void setServerName(String newName) {
-        if( !serverNameCriticalOpen) {
+        if( !isServerNameCriticalOpen()) {
             serverName = newName.substring(0, 30);
             closeServerNameCritical();
         }
