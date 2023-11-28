@@ -32,7 +32,7 @@ public class ClientMessageHandler implements Runnable{
      */
     private final PrintWriter clientWriter;
     /**
-     * Receives messages through pricniapl client socket input stream.
+     * Receives messages through principal client socket input stream.
      */
     private final BufferedReader br;
 

@@ -50,6 +50,11 @@ public class Server implements Runnable {
      */
     private final ExecutorService messageReceiverExecutor;
 
+    public static void main(String[] args) {
+        ExecutorService serverExecutor = serverExecutor = Executors.newSingleThreadExecutor();
+        serverExecutor.execute(new Server(5, "The Boys"));
+    }
+
     /**
      * Instantiates a new Server with option to change default server name.
      * @param numClients Max Number of clients to allow.
