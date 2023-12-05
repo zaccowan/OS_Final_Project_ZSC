@@ -2,7 +2,7 @@
 
 **Final project for Operating Systems class at Bellarmine University. Multithreaded chat server with Java Swing GUI, Java sockets, and shared resource mutual exclusion.**
 <br>
-Watch my [Kaltura Video](https://video.bellarmine.edu/media/Operating+Systems+Fall+2023+Project/1_9nxtz0pc) to see Application Running and Code Review!
+Watch my [Kaltura Video]([https://video.bellarmine.edu/media/Operating+Systems+Fall+2023+Project/1_9nxtz0pc](https://video.bellarmine.edu/media/Multi-threaded+Chat+Server+%28OS+Final+Project%29/1_vhcd0qom)) to see Application Running and Code Review!
 
 <br>
 The main focus of this project is using ***multiple threads of execution while simultaneously maintaining a critical section.***
